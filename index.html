@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur Multi-Formats (A4/A3)</title>
+  <title>Générateur A4/A3 - Aperçu Compact</title>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
@@ -19,10 +19,7 @@
       font-family: 'Segoe UI', sans-serif; 
       background: var(--bg-app); 
       color: var(--text-main); 
-      margin: 0; padding: 0; 
-      height: 100vh; 
-      display: flex; 
-      overflow: hidden; 
+      margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden; 
     }
 
     /* --- SIDEBAR --- */
@@ -38,22 +35,14 @@
 
     .control-group { display: flex; flex-direction: column; gap: 8px; }
     .control-group label { font-weight: bold; font-size: 0.9rem; color: #a6adc8; }
-    
-    input[type="text"], select { 
-      padding: 12px; border-radius: 6px; border: 1px solid #45475a; 
-      background: #181825; color: white; outline: none; 
-    }
-
+    input[type="text"], select { padding: 12px; border-radius: 6px; border: 1px solid #45475a; background: #181825; color: white; outline: none; }
     .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .checkbox-wrapper input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
-
-    /* Style des boutons radio (Orientation & Format) */
     .radio-group { display: flex; gap: 10px; background: #181825; padding: 5px; border-radius: 8px; border: 1px solid #45475a; }
     .radio-option { flex: 1; position: relative; }
     .radio-option input { position: absolute; opacity: 0; cursor: pointer; height: 100%; width: 100%; z-index: 2; margin: 0; }
     .radio-option span { display: block; text-align: center; padding: 8px; border-radius: 5px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
     .radio-option input:checked + span { background: var(--accent); color: #fff; font-weight: bold; }
-    .radio-option input:not(:checked) + span:hover { background: rgba(255,255,255,0.05); }
 
     button.print-btn {
       margin-top: auto; padding: 15px; border-radius: 8px; border: none;
@@ -62,44 +51,60 @@
     }
     button.print-btn:hover { transform: scale(1.02); }
 
-    /* --- APERÇU --- */
+    /* --- APERÇU (MODIFIÉ POUR ÊTRE PLUS PETIT À L'ÉCRAN) --- */
     .main-content {
       flex: 1; background: #181825;
-      display: flex; justify-content: center; align-items: center;
-      padding: 40px; overflow: auto; /* Permet de scroller si A3 */
+      display: flex; flex-direction: column; /* Pour afficher le texte "Aperçu" */
+      justify-content: center; align-items: center;
+      overflow: hidden; /* Plus de scrollbars grâce au zoom */
+      position: relative;
+    }
+
+    /* Le conteneur de la feuille */
+    .sheet-container {
+      /* C'est ici que la magie opère pour l'écran */
+      transform: scale(0.60); /* <--- ZOOM D'AFFICHAGE (60%) */
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(0,0,0,0.6);
     }
 
     .sheet {
       background: white;
-      box-shadow: 0 0 40px rgba(0,0,0,0.5);
       display: flex; justify-content: center; align-items: center;
       transition: all 0.3s ease-in-out;
-      transform-origin: center top;
     }
 
-    /* Dimensions exactes pour l'aperçu */
+    /* Tailles réelles (en mm) conservées pour la structure */
     .sheet.a4.portrait  { width: 210mm; height: 297mm; }
     .sheet.a4.landscape { width: 297mm; height: 210mm; }
-    
     .sheet.a3.portrait  { width: 297mm; height: 420mm; }
     .sheet.a3.landscape { width: 420mm; height: 297mm; }
 
     #barcode-wrapper { transform-origin: center center; }
 
-    /* --- IMPRESSION --- */
+    /* --- IMPRESSION (RÉTABLISSEMENT DE LA TAILLE 100%) --- */
     @media print {
       .sidebar { display: none !important; }
+      
       .main-content { 
         position: absolute; top: 0; left: 0; 
         width: 100% !important; height: 100% !important; 
         padding: 0 !important; margin: 0 !important; 
         background: white !important; display: block !important; overflow: visible !important;
       }
+
+      /* On annule le zoom d'affichage pour l'impression */
+      .sheet-container {
+        transform: none !important; /* <--- RETOUR A 100% */
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100% !important; height: 100% !important;
+      }
+
       .sheet {
-        box-shadow: none !important; margin: 0 !important;
         width: 100% !important; height: 100% !important;
         page-break-after: always;
-        display: flex !important; justify-content: center !important; align-items: center !important;
+        margin: 0 !important;
       }
     }
   </style>
@@ -159,7 +164,7 @@
     </div>
 
     <div class="control-group">
-      <label>Taille Code (Zoom)</label>
+      <label>Taille Code</label>
       <input type="range" id="sizeSlider" min="0.5" max="6" step="0.1" value="1">
     </div>
 
@@ -167,9 +172,13 @@
   </aside>
 
   <main class="main-content">
-    <div id="pageSheet" class="sheet a4 portrait">
-      <div id="barcode-wrapper">
-        <div id="canvas-target"></div>
+    <div style="position:absolute; top:20px; color:#666; font-size:12px;">Aperçu écran (60%)</div>
+    
+    <div class="sheet-container">
+      <div id="pageSheet" class="sheet a4 portrait">
+        <div id="barcode-wrapper">
+          <div id="canvas-target"></div>
+        </div>
       </div>
     </div>
   </main>
@@ -184,17 +193,14 @@
     const pageSheet = document.getElementById("pageSheet");
     const printStyle = document.getElementById("print-style");
 
-    // Gestion de la configuration de la page (Format + Orientation)
     function updatePageConfig() {
-      // Récupère les valeurs cochées
-      const format = document.querySelector('input[name="format"]:checked').value; // a4 ou a3
-      const orientation = document.querySelector('input[name="orientation"]:checked').value; // portrait ou landscape
-
-      // 1. Mise à jour Visuelle
+      const format = document.querySelector('input[name="format"]:checked').value;
+      const orientation = document.querySelector('input[name="orientation"]:checked').value;
+      
+      // Update CSS Visuel
       pageSheet.className = `sheet ${format} ${orientation}`;
-
-      // 2. Mise à jour pour l'Imprimante
-      // Note: "size: A3 landscape" est compris par les navigateurs modernes
+      
+      // Update CSS Impression
       printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
     }
 
@@ -262,9 +268,8 @@
     inputType.addEventListener("change", generer);
     slider.addEventListener("input", updateSize);
 
-    // Initialisation
     generer();
-    updatePageConfig(); // Applique le format par défaut au chargement
+    updatePageConfig();
   </script>
 </body>
 </html>
