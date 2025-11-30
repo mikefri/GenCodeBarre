@@ -5,20 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Générateur codes barres</title>
 
-  <!-- --- AJOUTS PWA (ICÔNES & MANIFESTE) --- -->
   <meta name="theme-color" content="#89b4fa">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
 
-  <!-- Librairies Externes -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- Lien vers le fichier CSS -->
   <link rel="stylesheet" href="style.css">
-  
-  <!-- Style dynamique pour l'impression -->
+   
   <style id="print-style"></style>
 </head>
 <body>
@@ -84,6 +80,11 @@
       <button class="btn-print" id="printBtn">🖨️ IMPRIMER</button>
       <button class="btn-download" id="downloadBtn">💾 TÉLÉCHARGER PNG</button>
     </div>
+
+    <div style="margin-top: 30px; text-align: center; font-size: 0.85rem; color: #666; font-style: italic;">
+      Créé par <strong>micfri</strong>
+    </div>
+
   </aside>
 
   <main class="main-content">
@@ -98,10 +99,8 @@
     </div>
   </main>
 
-  <!-- Lien vers le fichier JavaScript principal -->
   <script src="script.js"></script>
 
-  <!-- --- AJOUT PWA (ACTIVATION SERVICE WORKER) --- -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
