@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur Pro - Impression Propre</title>
+  <title>Générateur Multi-Formats (A4/A3)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
@@ -13,7 +13,6 @@
   </style>
 
   <style>
-    /* --- STYLE GÉNÉRAL --- */
     :root { --bg-app: #1e1e2e; --sidebar-bg: #2d2d44; --text-main: #cdd6f4; --accent: #89b4fa; }
 
     body { 
@@ -26,7 +25,7 @@
       overflow: hidden; 
     }
 
-    /* --- SIDEBAR (GAUCHE) --- */
+    /* --- SIDEBAR --- */
     .sidebar {
       width: 300px;
       background: var(--sidebar-bg);
@@ -37,21 +36,25 @@
       overflow-y: auto;
     }
 
-    /* Éléments de formulaire */
     .control-group { display: flex; flex-direction: column; gap: 8px; }
     .control-group label { font-weight: bold; font-size: 0.9rem; color: #a6adc8; }
-    input[type="text"], select { padding: 12px; border-radius: 6px; border: 1px solid #45475a; background: #181825; color: white; outline: none; }
     
+    input[type="text"], select { 
+      padding: 12px; border-radius: 6px; border: 1px solid #45475a; 
+      background: #181825; color: white; outline: none; 
+    }
+
     .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .checkbox-wrapper input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
 
-    .orientation-selector { display: flex; gap: 10px; background: #181825; padding: 5px; border-radius: 8px; border: 1px solid #45475a; }
+    /* Style des boutons radio (Orientation & Format) */
+    .radio-group { display: flex; gap: 10px; background: #181825; padding: 5px; border-radius: 8px; border: 1px solid #45475a; }
     .radio-option { flex: 1; position: relative; }
     .radio-option input { position: absolute; opacity: 0; cursor: pointer; height: 100%; width: 100%; z-index: 2; margin: 0; }
-    .radio-option span { display: block; text-align: center; padding: 8px; border-radius: 5px; font-size: 0.9rem; cursor: pointer; }
+    .radio-option span { display: block; text-align: center; padding: 8px; border-radius: 5px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
     .radio-option input:checked + span { background: var(--accent); color: #fff; font-weight: bold; }
+    .radio-option input:not(:checked) + span:hover { background: rgba(255,255,255,0.05); }
 
-    /* Bouton Imprimer */
     button.print-btn {
       margin-top: auto; padding: 15px; border-radius: 8px; border: none;
       background: #a6e3a1; color: #1e1e2e; font-weight: 800; font-size: 1.1rem;
@@ -59,60 +62,45 @@
     }
     button.print-btn:hover { transform: scale(1.02); }
 
-    /* --- ZONE D'APERÇU (DROITE) --- */
+    /* --- APERÇU --- */
     .main-content {
       flex: 1; background: #181825;
       display: flex; justify-content: center; align-items: center;
-      padding: 40px; overflow: auto;
+      padding: 40px; overflow: auto; /* Permet de scroller si A3 */
     }
 
     .sheet {
       background: white;
       box-shadow: 0 0 40px rgba(0,0,0,0.5);
       display: flex; justify-content: center; align-items: center;
-      transition: all 0.3s;
-      position: relative;
+      transition: all 0.3s ease-in-out;
+      transform-origin: center top;
     }
-    .sheet.portrait { width: 210mm; height: 297mm; }
-    .sheet.landscape { width: 297mm; height: 210mm; }
+
+    /* Dimensions exactes pour l'aperçu */
+    .sheet.a4.portrait  { width: 210mm; height: 297mm; }
+    .sheet.a4.landscape { width: 297mm; height: 210mm; }
+    
+    .sheet.a3.portrait  { width: 297mm; height: 420mm; }
+    .sheet.a3.landscape { width: 420mm; height: 297mm; }
 
     #barcode-wrapper { transform-origin: center center; }
 
-    /* =========================================
-       CORRECTION IMPRESSION (Le cœur du fix)
-       ========================================= */
+    /* --- IMPRESSION --- */
     @media print {
-      /* 1. On cache le menu latéral */
       .sidebar { display: none !important; }
-
-      /* 2. On réinitialise la zone principale */
-      .main-content {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100vw !important;
-        height: 100vh !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        background: white !important; /* Force le fond blanc */
-        overflow: visible !important;
-        display: block !important;
+      .main-content { 
+        position: absolute; top: 0; left: 0; 
+        width: 100% !important; height: 100% !important; 
+        padding: 0 !important; margin: 0 !important; 
+        background: white !important; display: block !important; overflow: visible !important;
       }
-
-      /* 3. On force la feuille à prendre toute la place */
       .sheet {
-        box-shadow: none !important;
-        margin: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
+        box-shadow: none !important; margin: 0 !important;
+        width: 100% !important; height: 100% !important;
         page-break-after: always;
-        /* Centre le code barre parfaitement */
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        display: flex !important; justify-content: center !important; align-items: center !important;
       }
-      
-      /* Force le fond du body en blanc aussi */
-      body { background: white !important; }
     }
   </style>
 </head>
@@ -140,30 +128,46 @@
       <span>Afficher le texte sous le code</span>
     </label>
 
+    <hr style="border:0; border-top:1px solid #45475a; width:100%;">
+
+    <div class="control-group">
+      <label>Format Papier</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="format" value="a4" checked onchange="updatePageConfig()">
+          <span>A4</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="format" value="a3" onchange="updatePageConfig()">
+          <span>A3</span>
+        </label>
+      </div>
+    </div>
+
     <div class="control-group">
       <label>Orientation</label>
-      <div class="orientation-selector">
+      <div class="radio-group">
         <label class="radio-option">
-          <input type="radio" name="orientation" value="portrait" checked onchange="setOrientation('portrait')">
+          <input type="radio" name="orientation" value="portrait" checked onchange="updatePageConfig()">
           <span>Portrait</span>
         </label>
         <label class="radio-option">
-          <input type="radio" name="orientation" value="landscape" onchange="setOrientation('landscape')">
+          <input type="radio" name="orientation" value="landscape" onchange="updatePageConfig()">
           <span>Paysage</span>
         </label>
       </div>
     </div>
 
     <div class="control-group">
-      <label>Taille (Zoom)</label>
-      <input type="range" id="sizeSlider" min="0.5" max="5" step="0.1" value="1">
+      <label>Taille Code (Zoom)</label>
+      <input type="range" id="sizeSlider" min="0.5" max="6" step="0.1" value="1">
     </div>
 
     <button class="print-btn" onclick="window.print()">🖨️ IMPRIMER</button>
   </aside>
 
   <main class="main-content">
-    <div id="pageSheet" class="sheet portrait">
+    <div id="pageSheet" class="sheet a4 portrait">
       <div id="barcode-wrapper">
         <div id="canvas-target"></div>
       </div>
@@ -180,9 +184,18 @@
     const pageSheet = document.getElementById("pageSheet");
     const printStyle = document.getElementById("print-style");
 
-    function setOrientation(mode) {
-      pageSheet.className = `sheet ${mode}`;
-      printStyle.innerHTML = `@page { size: A4 ${mode}; margin: 0mm; }`;
+    // Gestion de la configuration de la page (Format + Orientation)
+    function updatePageConfig() {
+      // Récupère les valeurs cochées
+      const format = document.querySelector('input[name="format"]:checked').value; // a4 ou a3
+      const orientation = document.querySelector('input[name="orientation"]:checked').value; // portrait ou landscape
+
+      // 1. Mise à jour Visuelle
+      pageSheet.className = `sheet ${format} ${orientation}`;
+
+      // 2. Mise à jour pour l'Imprimante
+      // Note: "size: A3 landscape" est compris par les navigateurs modernes
+      printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
     }
 
     function generer() {
@@ -200,13 +213,12 @@
           JsBarcode(svg, texte, {
             format: "CODE128",
             lineColor: "#000",
-            background: "#ffffff", // Fond blanc explicite pour éviter la transparence
+            background: "#ffffff",
             displayValue: displayValue,
             fontSize: 20,
             height: 100,
             margin: 10
           });
-
         } else if (type === "EAN13") {
           let num = texte.replace(/\D/g, "");
           if (num.length === 12) num += calculCheckDigit(num);
@@ -217,18 +229,17 @@
           JsBarcode(svg, num, {
             format: "EAN13",
             lineColor: "#000",
-            background: "#ffffff", // Fond blanc explicite
+            background: "#ffffff",
             displayValue: displayValue,
             fontSize: 24,
             height: 100,
             margin: 10
           });
-
         } else if (type === "QRCODE") {
           const canvas = document.createElement("canvas");
           target.appendChild(canvas);
           QRCode.toCanvas(canvas, texte || "https://exemple.com", {
-            width: 250,
+            width: 300,
             margin: 1,
             color: { dark: "#000000", light: "#ffffff" }
           });
@@ -247,13 +258,13 @@
       return rem === 0 ? 0 : 10 - rem;
     }
 
-    // Événements
     inputTexte.addEventListener("input", generer);
     inputType.addEventListener("change", generer);
     slider.addEventListener("input", updateSize);
 
-    // Init
+    // Initialisation
     generer();
+    updatePageConfig(); // Applique le format par défaut au chargement
   </script>
 </body>
 </html>
