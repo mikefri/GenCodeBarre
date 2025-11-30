@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Impression Pure</title>
+  <title>Générateur Pro - Impression Propre</title>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
   <style id="print-style">
-    /* Supprime TOUT ce qui vient du navigateur (Date, URL, Titre) */
-    @page { 
-      size: A4 portrait; 
-      margin: 0mm; /* C'est cette ligne qui enlève les textes parasites */
-    }
+    @page { size: A4 portrait; margin: 0; }
   </style>
 
   <style>
+    /* --- STYLE GÉNÉRAL --- */
     :root { --bg-app: #1e1e2e; --sidebar-bg: #2d2d44; --text-main: #cdd6f4; --accent: #89b4fa; }
 
     body { 
       font-family: 'Segoe UI', sans-serif; 
       background: var(--bg-app); 
       color: var(--text-main); 
-      margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden;
+      margin: 0; padding: 0; 
+      height: 100vh; 
+      display: flex; 
+      overflow: hidden; 
     }
 
-    /* --- SIDEBAR (Partie Gauche - Ne s'imprime pas) --- */
+    /* --- SIDEBAR (GAUCHE) --- */
     .sidebar {
       width: 300px;
       background: var(--sidebar-bg);
@@ -36,29 +36,22 @@
       z-index: 10;
       overflow-y: auto;
     }
+
+    /* Éléments de formulaire */
     .control-group { display: flex; flex-direction: column; gap: 8px; }
     .control-group label { font-weight: bold; font-size: 0.9rem; color: #a6adc8; }
+    input[type="text"], select { padding: 12px; border-radius: 6px; border: 1px solid #45475a; background: #181825; color: white; outline: none; }
     
-    input[type="text"], select {
-      padding: 12px; border-radius: 6px; border: 1px solid #45475a;
-      background: #181825; color: white; outline: none;
-    }
+    .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .checkbox-wrapper input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
 
-    /* Checkbox stylisée */
-    .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-top: 5px;}
-    .checkbox-wrapper input { cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent); }
-
-    /* Boutons radio Orientation */
     .orientation-selector { display: flex; gap: 10px; background: #181825; padding: 5px; border-radius: 8px; border: 1px solid #45475a; }
     .radio-option { flex: 1; position: relative; }
     .radio-option input { position: absolute; opacity: 0; cursor: pointer; height: 100%; width: 100%; z-index: 2; margin: 0; }
     .radio-option span { display: block; text-align: center; padding: 8px; border-radius: 5px; font-size: 0.9rem; cursor: pointer; }
     .radio-option input:checked + span { background: var(--accent); color: #fff; font-weight: bold; }
 
-    /* Slider */
-    .slider-container { display: flex; align-items: center; gap: 10px; }
-    input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--accent); }
-
+    /* Bouton Imprimer */
     button.print-btn {
       margin-top: auto; padding: 15px; border-radius: 8px; border: none;
       background: #a6e3a1; color: #1e1e2e; font-weight: 800; font-size: 1.1rem;
@@ -66,7 +59,7 @@
     }
     button.print-btn:hover { transform: scale(1.02); }
 
-    /* --- ZONE D'APERÇU (Partie Droite) --- */
+    /* --- ZONE D'APERÇU (DROITE) --- */
     .main-content {
       flex: 1; background: #181825;
       display: flex; justify-content: center; align-items: center;
@@ -78,34 +71,48 @@
       box-shadow: 0 0 40px rgba(0,0,0,0.5);
       display: flex; justify-content: center; align-items: center;
       transition: all 0.3s;
+      position: relative;
     }
     .sheet.portrait { width: 210mm; height: 297mm; }
     .sheet.landscape { width: 297mm; height: 210mm; }
 
     #barcode-wrapper { transform-origin: center center; }
 
-    /* --- CSS SPÉCIAL IMPRESSION (LE PLUS IMPORTANT) --- */
+    /* =========================================
+       CORRECTION IMPRESSION (Le cœur du fix)
+       ========================================= */
     @media print {
-      body * { visibility: hidden; } /* Cache tout par défaut */
-      
-      /* On affiche uniquement la feuille A4 */
-      .sheet, .sheet * { 
-        visibility: visible; 
-      }
-      
-      .sheet {
+      /* 1. On cache le menu latéral */
+      .sidebar { display: none !important; }
+
+      /* 2. On réinitialise la zone principale */
+      .main-content {
         position: absolute;
-        left: 0; top: 0;
-        margin: 0; padding: 0;
-        box-shadow: none;
+        top: 0; left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important; /* Force le fond blanc */
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      /* 3. On force la feuille à prendre toute la place */
+      .sheet {
+        box-shadow: none !important;
+        margin: 0 !important;
         width: 100% !important;
         height: 100% !important;
-        overflow: hidden;
+        page-break-after: always;
+        /* Centre le code barre parfaitement */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
       
-      .sidebar, .main-content { 
-        display: none !important; /* Supprime l'espace pris par les menus */
-      }
+      /* Force le fond du body en blanc aussi */
+      body { background: white !important; }
     }
   </style>
 </head>
@@ -130,7 +137,7 @@
 
     <label class="checkbox-wrapper">
       <input type="checkbox" id="showText" checked onchange="generer()">
-      <span>Afficher les chiffres (Texte)</span>
+      <span>Afficher le texte sous le code</span>
     </label>
 
     <div class="control-group">
@@ -148,10 +155,8 @@
     </div>
 
     <div class="control-group">
-      <label>Taille (<span id="sizeValue">100%</span>)</label>
-      <div class="slider-container">
-        <input type="range" id="sizeSlider" min="0.5" max="5" step="0.1" value="1">
-      </div>
+      <label>Taille (Zoom)</label>
+      <input type="range" id="sizeSlider" min="0.5" max="5" step="0.1" value="1">
     </div>
 
     <button class="print-btn" onclick="window.print()">🖨️ IMPRIMER</button>
@@ -168,9 +173,8 @@
   <script>
     const inputTexte = document.getElementById("texte");
     const inputType = document.getElementById("type");
-    const showText = document.getElementById("showText"); // Checkbox
+    const showText = document.getElementById("showText");
     const slider = document.getElementById("sizeSlider");
-    const sizeVal = document.getElementById("sizeValue");
     const target = document.getElementById("canvas-target");
     const wrapper = document.getElementById("barcode-wrapper");
     const pageSheet = document.getElementById("pageSheet");
@@ -178,14 +182,13 @@
 
     function setOrientation(mode) {
       pageSheet.className = `sheet ${mode}`;
-      // Force les marges à 0 pour l'impression
       printStyle.innerHTML = `@page { size: A4 ${mode}; margin: 0mm; }`;
     }
 
     function generer() {
       const texte = inputTexte.value.trim();
       const type = inputType.value;
-      const displayValue = showText.checked; // Vrai ou Faux selon la case
+      const displayValue = showText.checked;
 
       target.innerHTML = "";
       if (!texte && type !== "QRCODE") return;
@@ -197,11 +200,11 @@
           JsBarcode(svg, texte, {
             format: "CODE128",
             lineColor: "#000",
-            background: "transparent",
-            displayValue: displayValue, // Affiche ou cache les chiffres
+            background: "#ffffff", // Fond blanc explicite pour éviter la transparence
+            displayValue: displayValue,
             fontSize: 20,
             height: 100,
-            margin: 0
+            margin: 10
           });
 
         } else if (type === "EAN13") {
@@ -214,19 +217,19 @@
           JsBarcode(svg, num, {
             format: "EAN13",
             lineColor: "#000",
-            background: "transparent",
-            displayValue: displayValue, // Affiche ou cache les chiffres
+            background: "#ffffff", // Fond blanc explicite
+            displayValue: displayValue,
             fontSize: 24,
             height: 100,
-            margin: 0
+            margin: 10
           });
 
         } else if (type === "QRCODE") {
           const canvas = document.createElement("canvas");
           target.appendChild(canvas);
           QRCode.toCanvas(canvas, texte || "https://exemple.com", {
-            width: 200,
-            margin: 0,
+            width: 250,
+            margin: 1,
             color: { dark: "#000000", light: "#ffffff" }
           });
         }
@@ -234,9 +237,7 @@
     }
 
     function updateSize() {
-      const scale = slider.value;
-      sizeVal.innerText = Math.round(scale * 100) + "%";
-      wrapper.style.transform = `scale(${scale})`;
+      wrapper.style.transform = `scale(${slider.value})`;
     }
 
     function calculCheckDigit(ean12) {
@@ -246,10 +247,12 @@
       return rem === 0 ? 0 : 10 - rem;
     }
 
+    // Événements
     inputTexte.addEventListener("input", generer);
     inputType.addEventListener("change", generer);
     slider.addEventListener("input", updateSize);
 
+    // Init
     generer();
   </script>
 </body>
