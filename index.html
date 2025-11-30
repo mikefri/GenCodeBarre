@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Générateur Code 128</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background: #f4f4f4; }
+    input, button { padding: 12px; margin: 10px; font-size: 18px; }
+    svg { margin: 30px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    button { background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <h1>Générateur de Code 128</h1>
+  <input type="text" id="texte" placeholder="Entre ton texte ici" value="1234567890" autofocus />
+  <br/>
+  <button onclick="generer()">Générer le code-barres</button>
+  <br/><br/>
+  <svg id="barcode"></svg>
+
+  <script>
+    function generer() {
+      const texte = document.getElementById("texte").value.trim();
+      if (!texte) {
+        alert("Entre du texte d’abord !");
+        return;
+      }
+      JsBarcode("#barcode", texte, {
+        format: "CODE128",     // CODE128A, CODE128B, CODE128C aussi possibles
+        lineColor: "#000",
+        width: 2,
+        height: 100,
+        fontSize: 20,
+        displayValue: true,
+        margin: 20
+      });
+    }
+    // Génère au chargement
+    window.onload = generer;
+    // Génère à chaque touche relâchée
+    document.getElementById("texte").addEventListener("input", generer);
+  </script>
+</body>
+</html>
