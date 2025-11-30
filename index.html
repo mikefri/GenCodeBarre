@@ -3,111 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur A4 & Code-Barres</title>
+  <title>Générateur Pro - Layout Latéral</title>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
+  <style id="print-orientation">
+    @page { size: A4 portrait; margin: 0; }
+  </style>
+
   <style>
-    :root { --bg:#1e1e2e; --panel:#2d2d44; --text:#cdd6f4; --accent:#89b4fa; }
-    body { 
-      font-family: system-ui, sans-serif; 
-      background: var(--bg); 
-      color: var(--text); 
-      margin: 0; 
-      padding: 20px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      min-height: 100vh;
+    :root { 
+      --bg-app: #1e1e2e; 
+      --sidebar-bg: #2d2d44; 
+      --text-main: #cdd6f4; 
+      --accent: #89b4fa; 
+      --border: #45475a;
     }
 
-    /* --- PANNEAU DE CONTROLE --- */
-    .controls {
-      background: var(--panel);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 800px;
-      margin-bottom: 30px;
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: var(--bg-app); 
+      color: var(--text-main); 
+      margin: 0; 
+      padding: 0; 
+      height: 100vh; 
+      overflow: hidden; /* Empêche le scroll global, on scrollera dans les zones */
+      display: flex;
+    }
+
+    /* --- SIDEBAR (GAUCHE) --- */
+    .sidebar {
+      width: 320px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      padding: 30px 20px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 25px;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+      z-index: 10;
+      overflow-y: auto;
     }
 
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .sidebar h1 { margin: 0 0 10px 0; font-size: 1.4rem; color: var(--accent); }
+    .sidebar p { margin: 0; opacity: 0.7; font-size: 0.9rem; }
+
+    .control-group { display: flex; flex-direction: column; gap: 8px; }
+    .control-group label { font-weight: bold; font-size: 0.9rem; color: #a6adc8; }
+    
     input[type="text"], select {
-      padding: 10px; border-radius: 6px; border: 1px solid #555;
-      background: #333; color: white; flex: 1; font-size: 16px;
+      padding: 12px; border-radius: 6px; border: 1px solid var(--border);
+      background: #181825; color: white; font-size: 14px; outline: none;
     }
-    
-    /* Slider de taille */
-    .range-group { flex: 1; display: flex; align-items: center; gap: 10px; background: #333; padding: 5px 15px; border-radius: 6px; }
-    input[type="range"] { flex: 1; cursor: pointer; }
-    
-    button {
-      padding: 10px 20px; border-radius: 6px; border: none;
-      background: var(--accent); color: white; font-weight: bold;
-      cursor: pointer; font-size: 16px;
-    }
-    button:hover { opacity: 0.9; }
-    button.print-btn { background: #2ecc71; }
+    input:focus, select:focus { border-color: var(--accent); }
 
-    /* --- FEUILLE A4 (APERÇU) --- */
-    .sheet-container {
-      perspective: 1000px;
-      margin-bottom: 50px;
+    /* Orientation Switch */
+    .orientation-selector {
+      display: flex; gap: 10px; background: #181825; padding: 5px; border-radius: 8px; border: 1px solid var(--border);
     }
-    
-    .a4-page {
-      width: 210mm;
-      height: 297mm;
-      background: white;
-      color: black;
-      position: relative;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    .radio-option { flex: 1; position: relative; }
+    .radio-option input { position: absolute; opacity: 0; cursor: pointer; height: 100%; width: 100%; z-index: 2; margin: 0; }
+    .radio-option span {
+      display: block; text-align: center; padding: 8px; border-radius: 5px; 
+      font-size: 0.9rem; transition: 0.2s; cursor: pointer;
+    }
+    .radio-option input:checked + span { background: var(--accent); color: #fff; font-weight: bold; }
+    .radio-option input:not(:checked) + span:hover { background: rgba(255,255,255,0.05); }
+
+    /* Slider */
+    .slider-container { display: flex; align-items: center; gap: 10px; }
+    input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--accent); }
+
+    button.print-btn {
+      margin-top: auto; /* Pousse le bouton vers le bas */
+      padding: 15px; border-radius: 8px; border: none;
+      background: #a6e3a1; color: #1e1e2e; font-weight: 800; font-size: 1.1rem;
+      cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;
+      transition: transform 0.1s;
+    }
+    button.print-btn:hover { background: #94e28d; transform: scale(1.02); }
+
+    /* --- PREVIEW AREA (DROITE) --- */
+    .main-content {
+      flex: 1;
+      background: #181825; /* Fond foncé pour contraste */
       display: flex;
-      justify-content: center; /* Centré horizontalement */
-      align-items: center;     /* Centré verticalement */
-      overflow: hidden;
-      transition: transform 0.3s;
+      justify-content: center;
+      align-items: center;
+      overflow: auto; /* Scroll si la page déborde */
+      padding: 40px;
+      position: relative;
     }
 
-    /* Le conteneur du code qui sera redimensionné */
-    #barcode-wrapper {
-      transform-origin: center center;
-      text-align: center;
+    /* La Feuille */
+    .sheet {
+      background: white;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      position: relative;
+      transition: width 0.3s, height 0.3s; /* Animation fluide changement orientation */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0; /* Empêche la feuille d'être écrasée */
     }
 
-    /* --- GESTION DE L'IMPRESSION --- */
+    /* Dimensions A4 */
+    .sheet.portrait { width: 210mm; height: 297mm; }
+    .sheet.landscape { width: 297mm; height: 210mm; }
+
+    #barcode-wrapper { transform-origin: center center; }
+
+    /* --- IMPRESSION --- */
     @media print {
-      body { 
-        background: white; 
-        margin: 0; padding: 0; 
-        display: block; 
-      }
-      .controls, h1, p { display: none !important; } /* Cache l'interface */
-      .sheet-container { margin: 0; box-shadow: none; }
-      .a4-page {
-        width: 100%; height: 100vh; /* Force la pleine page */
-        box-shadow: none;
-        border: none;
+      body { display: block; background: white; height: auto; overflow: visible; }
+      .sidebar { display: none !important; } /* Cache le menu */
+      .main-content { display: block; padding: 0; background: white; overflow: visible; }
+      .sheet { 
+        box-shadow: none; margin: 0; 
+        /* Force la taille pour l'impression au cas où */
+        width: 100% !important; height: 100vh !important; 
         page-break-after: always;
       }
-      @page { margin: 0; size: A4; }
     }
   </style>
 </head>
 <body>
 
-  <div class="controls">
-    <div style="text-align:center; color:var(--accent); font-weight:bold; font-size:1.2em;">
-      Configuration
+  <aside class="sidebar">
+    <div>
+      <h1>Générateur</h1>
+      <p>Configurez votre étiquette</p>
     </div>
-    
-    <div class="row">
-      <input type="text" id="texte" value="TEST-1234" placeholder="Données du code">
+
+    <div class="control-group">
+      <label>Contenu</label>
+      <input type="text" id="texte" value="CODE-128-TEST" placeholder="Ex: 123456">
+    </div>
+
+    <div class="control-group">
+      <label>Format du code</label>
       <select id="type">
         <option value="CODE128" selected>Code 128</option>
         <option value="EAN13">EAN-13</option>
@@ -115,23 +150,42 @@
       </select>
     </div>
 
-    <div class="row">
-      <div class="range-group">
-        <span>Taille :</span>
-        <input type="range" id="sizeSlider" min="0.5" max="3" step="0.1" value="1">
-        <span id="sizeValue">100%</span>
+    <div class="control-group">
+      <label>Orientation de la page</label>
+      <div class="orientation-selector">
+        <label class="radio-option">
+          <input type="radio" name="orientation" value="portrait" checked onchange="setOrientation('portrait')">
+          <span>Portrait</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="orientation" value="landscape" onchange="setOrientation('landscape')">
+          <span>Paysage</span>
+        </label>
       </div>
-      <button class="print-btn" onclick="window.print()">🖨️ Imprimer la page</button>
     </div>
-  </div>
 
-  <div class="sheet-container">
-    <div class="a4-page">
+    <div class="control-group">
+      <label>Taille du code (<span id="sizeValue">100%</span>)</label>
+      <div class="slider-container">
+        <span style="font-size:12px">Petit</span>
+        <input type="range" id="sizeSlider" min="0.5" max="4" step="0.1" value="1">
+        <span style="font-size:12px">Grand</span>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      Imprimer
+    </button>
+  </aside>
+
+  <main class="main-content">
+    <div id="pageSheet" class="sheet portrait">
       <div id="barcode-wrapper">
         <div id="canvas-target"></div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
     const inputTexte = document.getElementById("texte");
@@ -140,12 +194,23 @@
     const sizeVal = document.getElementById("sizeValue");
     const target = document.getElementById("canvas-target");
     const wrapper = document.getElementById("barcode-wrapper");
+    const pageSheet = document.getElementById("pageSheet");
+    const printStyle = document.getElementById("print-orientation");
+
+    // Fonction pour changer l'orientation (Visuel + CSS Print)
+    function setOrientation(mode) {
+      // 1. Change la classe visuelle de la page
+      pageSheet.className = `sheet ${mode}`;
+      
+      // 2. Injecte la règle CSS pour l'imprimante
+      printStyle.innerHTML = `@page { size: A4 ${mode}; margin: 0; }`;
+    }
 
     function generer() {
       const texte = inputTexte.value.trim();
       const type = inputType.value;
       
-      target.innerHTML = ""; // Reset
+      target.innerHTML = "";
 
       if (!texte && type !== "QRCODE") return;
 
@@ -156,7 +221,7 @@
           JsBarcode(svg, texte, {
             format: "CODE128",
             lineColor: "#000",
-            background: "transparent", // Transparent pour s'intégrer à la page blanche
+            background: "transparent",
             displayValue: true,
             fontSize: 20,
             height: 100,
@@ -166,8 +231,7 @@
         } else if (type === "EAN13") {
           let num = texte.replace(/\D/g, "");
           if (num.length === 12) num += calculCheckDigit(num);
-          
-          if (num.length !== 13) throw new Error("12/13 chiffres requis");
+          if (num.length !== 13) throw new Error("13 chiffres requis");
 
           const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           target.appendChild(svg);
@@ -191,11 +255,11 @@
           });
         }
       } catch (e) {
-        target.innerHTML = `<span style='color:red; font-weight:bold'>${e.message}</span>`;
+        // En cas d'erreur, on ne casse pas tout, on affiche juste vide ou un log
+        console.warn(e);
       }
     }
 
-    // Gestion de la taille (Zoom CSS)
     function updateSize() {
       const scale = slider.value;
       sizeVal.innerText = Math.round(scale * 100) + "%";
@@ -214,7 +278,7 @@
     inputType.addEventListener("change", generer);
     slider.addEventListener("input", updateSize);
 
-    // Init
+    // Initialisation
     generer();
   </script>
 </body>
