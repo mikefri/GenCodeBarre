@@ -11,7 +11,8 @@
 
   <!-- Librairies -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <!-- Changement de CDN pour QRCode (plus stable pour la méthode toCanvas) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <style>
@@ -330,7 +331,8 @@
           });
         } else if (type === "QRCODE") {
           if (typeof QRCode === 'undefined') {
-            console.error("La librairie QRCode n'est pas chargée.");
+            console.error("La librairie QRCode n'est toujours pas chargée. Vérifiez votre connexion.");
+            refs.target.innerHTML = "<div style='color:red;'>Erreur: Librairie QRCode non chargée.</div>";
             return;
           }
           const canvas = document.createElement("canvas");
@@ -391,10 +393,12 @@
     refs.printBtn.addEventListener("click", () => window.print());
     refs.downloadBtn.addEventListener("click", telecharger);
 
-    // Init
-    updatePageConfig();
-    generer();
-    updateTitle();
+    // Init au chargement complet de la fenêtre pour s'assurer que les librairies sont là
+    window.addEventListener('load', () => {
+      updatePageConfig();
+      generer();
+      updateTitle();
+    });
   </script>
 </body>
 </html>
