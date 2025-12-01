@@ -1,125 +1,128 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur codes barres</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur codes barres</title>
 
-    <meta name="theme-color" content="#89b4fa">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- --- AJOUTS PWA --- -->
+  <meta name="theme-color" content="#89b4fa">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
 
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- Librairies -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <link rel="stylesheet" href="style.css">
-  <style id="print-style"></style>
+  <link rel="stylesheet" href="style.css">
+  <style id="print-style"></style>
 </head>
 <body>
 
-  <aside class="sidebar">
-    <h2 class="app-title">Générateur</h2>
-    
-        <div class="control-group">
-      <label>Titre (Haut de page)</label>
-      <input type="text" id="customTitle" placeholder="Ex: PROMO 2025">
-    </div>
+  <aside class="sidebar">
+    <h2 class="app-title">Générateur</h2>
+    
+    <!-- NOUVEAU : GESTION DU TITRE -->
+    <div class="control-group">
+      <label>Titre (Haut de page)</label>
+      <input type="text" id="customTitle" placeholder="Ex: PROMO 2025">
+    </div>
 
-    <div class="control-group">
-      <label>Taille du Titre</label>
-      <input type="range" id="titleSizeSlider" min="1" max="8" step="0.5" value="3">
-    </div>
-    
-    <hr class="divider">
+    <div class="control-group">
+      <label>Taille du Titre</label>
+      <input type="range" id="titleSizeSlider" min="1" max="8" step="0.5" value="3">
+    </div>
+    
+    <hr class="divider">
 
-    <div class="control-group">
-      <label>Code (Données)</label>
-      <input type="text" id="texte" value="12345678" placeholder="Données...">
-            <div id="code-feedback" style="font-size: 0.75rem; min-height: 1.2rem; margin-top: 5px;"></div>
-    </div>
+    <div class="control-group">
+      <label>Code (Données)</label>
+      <input type="text" id="texte" value="12345678" placeholder="Données...">
+    </div>
 
-    <div class="control-group">
-      <label>Type de Code</label>
-      <select id="type">
-        <option value="CODE128" selected>Code 128</option>
-        <option value="EAN13">EAN-13</option>
-        <option value="QRCODE">QR Code</option>
-      </select>
-    </div>
+    <div class="control-group">
+      <label>Type de Code</label>
+      <select id="type">
+        <option value="CODE128" selected>Code 128</option>
+        <option value="EAN13">EAN-13</option>
+        <option value="QRCODE">QR Code</option>
+      </select>
+    </div>
 
-    <label class="checkbox-wrapper">
-      <input type="checkbox" id="showText" checked>
-      <span>Afficher chiffres sous le code</span>
-    </label>
+    <label class="checkbox-wrapper">
+      <input type="checkbox" id="showText" checked>
+      <span>Afficher chiffres sous le code</span>
+    </label>
 
-    <hr class="divider">
+    <hr class="divider">
 
-    <div class="control-group">
-      <label>Format Papier</label>
-      <div class="radio-group">
-        <label class="radio-option">
-          <input type="radio" name="format" value="a4" checked>
-          <span>A4</span>
-        </label>
-        <label class="radio-option">
-          <input type="radio" name="format" value="a3">
-          <span>A3</span>
-        </label>
-      </div>
-    </div>
+    <div class="control-group">
+      <label>Format Papier</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="format" value="a4" checked>
+          <span>A4</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="format" value="a3">
+          <span>A3</span>
+        </label>
+      </div>
+    </div>
 
-    <div class="control-group">
-      <label>Orientation</label>
-      <div class="radio-group">
-        <label class="radio-option">
-          <input type="radio" name="orientation" value="portrait" checked>
-          <span>Portrait</span>
-        </label>
-        <label class="radio-option">
-          <input type="radio" name="orientation" value="landscape">
-          <span>Paysage</span>
-        </label>
-      </div>
-      </div>
+    <div class="control-group">
+      <label>Orientation</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="orientation" value="portrait" checked>
+          <span>Portrait</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="orientation" value="landscape">
+          <span>Paysage</span>
+        </label>
+      </div>
+    </div>
 
-    <div class="control-group">
-      <label>Taille du Code</label>
-      <input type="range" id="sizeSlider" min="0.5" max="6" step="0.1" value="1">
-    </div>
+    <div class="control-group">
+      <label>Taille du Code</label>
+      <input type="range" id="sizeSlider" min="0.5" max="6" step="0.1" value="1">
+    </div>
 
-    <div class="actions">
-      <button class="btn-print" id="printBtn">🖨️ IMPRIMER</button>
-      <button class="btn-download" id="downloadBtn">💾 TÉLÉCHARGER PNG</button>
-    </div>
+    <div class="actions">
+      <button class="btn-print" id="printBtn">🖨️ IMPRIMER</button>
+      <button class="btn-download" id="downloadBtn">💾 TÉLÉCHARGER PNG</button>
+    </div>
 
-    <div style="margin-top: 20px; text-align: center; font-size: 0.8rem; color: #a6adc8; opacity: 0.6;">
-      Créé par micfri
-    </div>
-  </aside>
+    <div style="margin-top: 20px; text-align: center; font-size: 0.8rem; color: #a6adc8; opacity: 0.6;">
+      Créé par micfri
+    </div>
+  </aside>
 
-  <main class="main-content">
-    <div style="position:absolute; top:20px; color:#666; font-size:12px;">Aperçu écran (60%)</div>
-    
-    <div class="sheet-container" id="capture-zone">
-      <div id="pageSheet" class="sheet a4 portrait">
-        
-                <div id="title-display"></div>
+  <main class="main-content">
+    <div style="position:absolute; top:20px; color:#666; font-size:12px;">Aperçu écran (60%)</div>
+    
+    <div class="sheet-container" id="capture-zone">
+      <div id="pageSheet" class="sheet a4 portrait">
+        
+        <!-- NOUVEAU : ZONE D'AFFICHAGE DU TITRE -->
+        <div id="title-display"></div>
 
-        <div id="barcode-wrapper">
-          <div id="canvas-target"></div>
-        </div>
-      </div>
-    </div>
-  </main>
+        <div id="barcode-wrapper">
+          <div id="canvas-target"></div>
+        </div>
+      </div>
+    </div>
+  </main>
 
-  <script src="script.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erreur SW:', err));
-      });
-    }
-  </script>
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erreur SW:', err));
+      });
+    }
+  </script>
 </body>
 </html>
