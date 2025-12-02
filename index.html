@@ -90,6 +90,23 @@
     .sidebar-content {
       padding: 24px;
       display: flex; flex-direction: column; gap: 24px;
+      flex: 1; /* Permet au contenu de pousser le footer */
+    }
+
+    /* --- SIDEBAR FOOTER --- */
+    .sidebar-footer {
+      padding: 15px 24px;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-sidebar);
+      margin-top: auto; /* Pousse vers le bas */
+    }
+    .sidebar-footer span {
+      opacity: 0.6;
+      font-weight: 500;
+      letter-spacing: 0.5px;
     }
 
     /* --- ONGLETS --- */
@@ -280,7 +297,9 @@
 
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal;">v2.0</span></div>
+      <div class="app-title">
+        <div class="app-icon">B</div>
+        GenCodeBarre V2
       </div>
     </div>
     
@@ -405,6 +424,11 @@
            </button>
         </div>
       </div>
+    </div>
+    
+    <!-- Footer Créé par Micfri -->
+    <div class="sidebar-footer">
+      <span>Créé par Micfri</span>
     </div>
   </aside>
 
