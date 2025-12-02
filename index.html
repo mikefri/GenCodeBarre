@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur codes barres</title>
+  <title>Générateur Codes Barres 2025</title>
   <meta name="theme-color" content="#89b4fa">
+
+  <!-- Polices Modernes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Librairies -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -14,18 +19,33 @@
 
   <style>
     :root { 
-      --bg-app: #1e1e2e; 
-      --sidebar-bg: #2d2d44; 
-      --text-main: #cdd6f4; 
-      --accent: #89b4fa; 
-      --accent-hover: #b4befe;
-      --tab-inactive: #45475a;
-      --success: #a6e3a1;
+      /* Palette 2025 "Deep Space" */
+      --bg-dark: #0f1016;
+      --glass-surface: rgba(30, 30, 40, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      
+      --text-main: #e2e8f0; 
+      --text-muted: #94a3b8;
+      
+      --accent: #6366f1; /* Indigo vibrant */
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --accent-hover: #818cf8;
+      
+      --success: #10b981;
+      --danger: #ef4444;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
     }
 
     body { 
-      font-family: 'Segoe UI', sans-serif; 
-      background: var(--bg-app); 
+      font-family: 'Inter', sans-serif; 
+      background-color: var(--bg-dark);
+      /* Fond Mesh Gradient subtil */
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
       color: var(--text-main); 
       margin: 0; padding: 0; 
       height: 100vh; 
@@ -33,109 +53,178 @@
       overflow: hidden; 
     }
 
-    /* --- SIDEBAR --- */
+    /* --- SCROLLBAR MODERNE --- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* --- SIDEBAR GLASSMORPHISM --- */
     .sidebar {
-      width: 320px; 
-      background: var(--sidebar-bg); 
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 15px;
-      box-shadow: 4px 0 15px rgba(0,0,0,0.2); 
+      width: 340px; 
+      background: var(--glass-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      padding: 24px;
+      display: flex; flex-direction: column; gap: 20px;
       z-index: 10; 
       overflow-y: auto;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.2);
     }
 
     .app-title {
-      margin: 0 0 15px 0; 
-      color: var(--accent); 
-      font-size: 1.2rem;
-      text-align: center;
+      margin: 0 0 10px 0; 
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .app-title::before {
+      content: ''; display: block; width: 12px; height: 12px;
+      background: var(--accent); border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
     }
 
-    /* --- STYLE DES ONGLETS --- */
+    /* --- ONGLETS STYLE "SEGMENTED CONTROL" --- */
     .tabs-nav {
       display: flex;
-      gap: 10px;
+      background: rgba(0,0,0,0.3);
+      padding: 4px;
+      border-radius: var(--radius-md);
       margin-bottom: 10px;
-      border-bottom: 2px solid var(--tab-inactive);
-      padding-bottom: 10px;
-      flex-shrink: 0;
+      border: 1px solid var(--glass-border);
     }
     .tab-btn {
-      flex: 1; padding: 8px; background: transparent; border: none;
-      color: #a6adc8; cursor: pointer; font-weight: bold;
-      border-radius: 6px; transition: all 0.2s; text-align: center;
+      flex: 1; 
+      padding: 8px; 
+      background: transparent; 
+      border: none;
+      color: var(--text-muted); 
+      cursor: pointer; 
+      font-weight: 600;
+      font-size: 0.85rem;
+      font-family: inherit;
+      border-radius: var(--radius-sm); 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .tab-btn:hover { background: rgba(255,255,255,0.05); color: white; }
-    .tab-btn.active { background: var(--accent); color: #1e1e2e; }
+    .tab-btn:hover { color: #fff; }
+    .tab-btn.active { 
+      background: var(--glass-border); /* Effet léger */
+      background: #2d2d3a;
+      color: #fff; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
 
-    .tab-content { display: none; flex-direction: column; gap: 15px; height: 100%; }
-    .tab-content.active { display: flex; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .tab-content { display: none; flex-direction: column; gap: 20px; height: 100%; }
+    .tab-content.active { display: flex; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* --- FORMULAIRES & SLIDERS --- */
-    .control-group { display: flex; flex-direction: column; gap: 5px; }
+    /* --- INPUTS & CONTROLS --- */
+    .control-group { display: flex; flex-direction: column; gap: 8px; }
+    
     .range-header { display: flex; justify-content: space-between; align-items: center; }
-    .range-header label { font-weight: bold; font-size: 0.85rem; color: #a6adc8; }
-    .range-value { font-size: 0.85rem; color: var(--accent); font-weight: bold; font-family: monospace; }
+    .range-header label { font-weight: 500; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .range-value { font-size: 0.8rem; color: var(--accent); font-weight: 700; font-family: 'Inter', monospace; background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: 4px; }
 
+    /* Inputs Text & Select */
     input[type="text"], select { 
-      padding: 10px; border-radius: 6px; border: 1px solid #45475a; 
-      background: #181825; color: white; outline: none; 
+      padding: 12px; 
+      border-radius: var(--radius-md); 
+      border: 1px solid var(--glass-border); 
+      background: rgba(0, 0, 0, 0.3); 
+      color: #fff; 
+      outline: none; 
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    input[type="range"] { accent-color: var(--accent); cursor: pointer; }
-    .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem; }
-    .checkbox-wrapper input { accent-color: var(--accent); cursor: pointer; }
-    .divider { border: 0; border-top: 1px solid #45475a; width: 100%; margin: 5px 0; }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
 
-    .radio-group { display: flex; gap: 10px; background: #181825; padding: 4px; border-radius: 6px; border: 1px solid #45475a; }
+    /* Modern Range Slider */
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; margin: 10px 0;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      width: 100%; height: 6px; background: #333344; border-radius: 10px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
+      background: var(--accent); margin-top: -6px; box-shadow: 0 0 10px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+    
+    /* Checkbox & Radio */
+    .checkbox-wrapper { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 0.9rem; user-select: none; }
+    .checkbox-wrapper input { accent-color: var(--accent); width: 16px; height: 16px; }
+    
+    .radio-group { display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--glass-border); }
     .radio-option { flex: 1; position: relative; }
     .radio-option input { position: absolute; opacity: 0; cursor: pointer; height: 100%; width: 100%; z-index: 2; margin: 0; }
     .radio-option span { 
-      display: block; text-align: center; padding: 6px; 
-      border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; 
+      display: block; text-align: center; padding: 8px; 
+      border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: var(--text-muted);
     }
-    .radio-option input:checked + span { background: var(--accent); color: #fff; font-weight: bold; }
+    .radio-option input:checked + span { background: var(--accent); color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
 
-    .actions { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+    .divider { border: 0; border-top: 1px solid var(--glass-border); width: 100%; margin: 5px 0; }
+
+    /* --- BOUTONS D'ACTION --- */
+    .actions { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
     button.action-btn { 
-      padding: 12px; border-radius: 6px; border: none; 
-      font-weight: bold; cursor: pointer; transition: transform 0.1s; 
+      padding: 14px; border-radius: var(--radius-md); border: none; 
+      font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
     }
-    button.action-btn:hover { opacity: 0.9; transform: scale(1.02); }
-    .btn-print { background: #a6e3a1; color: #1e1e2e; }
-    .btn-download { background: #f9e2af; color: #1e1e2e; }
+    button.action-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    button.action-btn:active { transform: translateY(0); }
 
-    /* --- NOUVEAU : STYLE IMPORT EXCEL --- */
+    .btn-print { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .btn-download { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    
+    /* Specific styles for Utility buttons */
+    #clearListBtn, #clearDataBtn { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    #clearListBtn:hover, #clearDataBtn:hover { background: var(--danger); color: white; }
+    #regenerateBatchBtn { background: var(--accent); color: white; }
+
+    /* --- IMPORT EXCEL --- */
     .drop-zone {
-      border: 2px dashed #45475a;
-      border-radius: 10px;
-      padding: 20px;
+      border: 2px dashed var(--glass-border);
+      background: rgba(0,0,0,0.2);
+      border-radius: var(--radius-md);
+      padding: 30px 20px;
       text-align: center;
-      color: #a6adc8;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.2s;
     }
-    .drop-zone:hover { border-color: var(--accent); color: white; background: rgba(137, 180, 250, 0.1); }
-    .hidden-input { display: none; }
+    .drop-zone:hover { border-color: var(--accent); color: #fff; background: rgba(99, 102, 241, 0.1); }
     
     .status-card {
-        background: #181825;
-        border: 1px solid #45475a;
-        border-radius: 8px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: var(--radius-md);
         padding: 15px;
         margin-top: 10px;
-        display: none; /* Masqué par défaut */
+        display: none; 
     }
 
-    /* --- APERÇU --- */
+    /* --- PREVIEW AREA (VIEWPORT) --- */
     .main-content {
-      flex: 1; background: #181825;
+      flex: 1; 
+      background: transparent; /* Voir le fond du body */
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       overflow: hidden; position: relative;
     }
+    
     .sheet-container {
-      transform: scale(0.60); transform-origin: center center;
-      box-shadow: 0 0 80px rgba(0,0,0,0.6);
+      transform: scale(0.65); transform-origin: center center;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5); /* Ombre profonde */
+      border-radius: 4px; /* Léger arrondi pour le réalisme papier */
     }
     .sheet {
       background: white; color: black;
@@ -146,30 +235,10 @@
       box-sizing: border-box;
     }
     
-    /* --- Styles Grid pour le mode planche --- */
-    #canvas-target {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-    #canvas-target.grid-mode {
-        flex-wrap: wrap;
-        align-content: flex-start;
-        gap: 15px;
-    }
-    .barcode-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 5px;
-    }
-
-    #title-display {
-      font-family: 'Arial', sans-serif; font-weight: bold; text-align: center;
-      margin-bottom: 20px; width: 90%; word-wrap: break-word; color: #000;
-    }
+    #canvas-target { display: flex; justify-content: center; align-items: center; width: 100%; }
+    #canvas-target.grid-mode { flex-wrap: wrap; align-content: flex-start; gap: 15px; }
+    .barcode-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
+    #title-display { font-family: 'Arial', sans-serif; font-weight: bold; text-align: center; margin-bottom: 20px; width: 90%; word-wrap: break-word; color: #000; }
     
     /* Dimensions Papier */
     .sheet.a4.portrait  { width: 210mm; min-height: 297mm; } 
@@ -177,14 +246,11 @@
     .sheet.a3.portrait  { width: 297mm; min-height: 420mm; }
     .sheet.a3.landscape { width: 420mm; min-height: 297mm; }
     
-    #barcode-wrapper { 
-        width: 100%;
-        display: flex; 
-        justify-content: center; 
-    }
+    #barcode-wrapper { width: 100%; display: flex; justify-content: center; }
 
     /* --- IMPRESSION --- */
     @media print {
+      body { background: white; }
       .sidebar { display: none !important; }
       .main-content { 
         position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; 
@@ -200,57 +266,58 @@
 <body>
 
   <aside class="sidebar">
-    <h2 class="app-title">Générateur Pro</h2>
+    <div class="app-title">BarCode Studio <span style="font-size: 0.7em; opacity: 0.6; font-weight: normal;">v2.0</span></div>
     
     <div class="tabs-nav">
-      <button class="tab-btn active" id="btn-tab-gen" data-target="tab-generator">Générateur</button>
-      <button class="tab-btn" id="btn-tab-tools" data-target="tab-tools">Import Excel</button>
+      <button class="tab-btn active" id="btn-tab-gen" data-target="tab-generator">Éditeur</button>
+      <button class="tab-btn" id="btn-tab-tools" data-target="tab-tools">Données</button>
     </div>
 
     <!-- --- ONGLET 1 : GÉNÉRATEUR --- -->
     <div id="tab-generator" class="tab-content active">
       
       <div class="control-group">
-        <label>Titre (Haut de page)</label>
-        <input type="text" id="customTitle" placeholder="Ex: Inventaire 2024">
+        <label>Titre de page</label>
+        <input type="text" id="customTitle" placeholder="Ex: Inventaire 2025">
       </div>
       <div class="control-group">
         <div class="range-header">
-          <label>Taille du Titre</label>
+          <label>Taille Titre</label>
           <span id="titleSizeVal" class="range-value">3</span>
         </div>
         <input type="range" id="titleSizeSlider" min="1" max="8" step="0.5" value="3" list="tickmarks-title">
         <datalist id="tickmarks-title">
-          <option value="1"></option><option value="2"></option><option value="3"></option>
-          <option value="4"></option><option value="5"></option><option value="6"></option><option value="7"></option><option value="8"></option>
+          <option value="1"></option><option value="3"></option><option value="5"></option><option value="8"></option>
         </datalist>
       </div>
       
-      <hr class="divider">
+      <div class="divider"></div>
 
       <div class="control-group">
-        <label>Code (Données)</label>
-        <input type="text" id="texte" value="12345678" placeholder="Données...">
+        <label>Données (Code)</label>
+        <input type="text" id="texte" value="12345678" placeholder="Saisir le code...">
       </div>
 
       <div class="control-group">
-        <label>Type de Code</label>
+        <label>Format</label>
         <select id="type">
-          <option value="CODE128" selected>Code 128</option>
-          <option value="EAN13">EAN-13</option>
-          <option value="QRCODE">QR Code</option>
+          <option value="CODE128" selected>Code 128 (Standard)</option>
+          <option value="EAN13">EAN-13 (Produit)</option>
+          <option value="QRCODE">QR Code (Lien)</option>
         </select>
       </div>
 
       <label class="checkbox-wrapper">
         <input type="checkbox" id="showText" checked>
-        <span>Afficher chiffres sous le code</span>
+        <span>Afficher le texte sous le code</span>
       </label>
 
-      <hr class="divider">
+      <div class="divider"></div>
 
       <div class="control-group">
-        <label>Format Papier</label>
+        <div class="range-header">
+          <label>Taille Papier</label>
+        </div>
         <div class="radio-group">
           <label class="radio-option">
             <input type="radio" name="format" value="a4" checked>
@@ -264,7 +331,6 @@
       </div>
 
       <div class="control-group">
-        <label>Orientation</label>
         <div class="radio-group">
           <label class="radio-option">
             <input type="radio" name="orientation" value="portrait" checked>
@@ -279,48 +345,61 @@
 
       <div class="control-group">
         <div class="range-header">
-          <label>Taille du Code</label>
+          <label>Échelle du Code</label>
           <span id="codeSizeVal" class="range-value">1</span>
         </div>
         <input type="range" id="sizeSlider" min="0.5" max="5" step="0.1" value="1" list="tickmarks-code">
         <datalist id="tickmarks-code">
-          <option value="1"></option><option value="2"></option><option value="3"></option>
-          <option value="4"></option><option value="5"></option>
+          <option value="1"></option><option value="2"></option><option value="3"></option><option value="4"></option><option value="5"></option>
         </datalist>
       </div>
 
       <div class="actions">
-        <button class="action-btn btn-print" id="printBtn">🖨️ IMPRIMER PLANCHE</button>
-        <button class="action-btn btn-download" id="downloadBtn">💾 TÉLÉCHARGER PNG</button>
+        <button class="action-btn btn-print" id="printBtn">
+          <span>🖨️</span> Imprimer
+        </button>
+        <button class="action-btn btn-download" id="downloadBtn">
+          <span>💾</span> Sauvegarder PNG
+        </button>
       </div>
     </div>
 
-    <!-- --- ONGLET 2 : OUTILS EXCEL (SIMPLIFIÉ) --- -->
+    <!-- --- ONGLET 2 : OUTILS EXCEL --- -->
     <div id="tab-tools" class="tab-content">
       <div class="control-group">
-        <label>Importer un fichier (.xlsx, .xls)</label>
+        <label>Import de masse (.xlsx)</label>
         <label class="drop-zone" id="dropZone">
-          📂 Cliquez ou glissez un fichier ici
+          <div style="font-size: 2rem; margin-bottom: 10px;">📂</div>
+          <div>Glissez votre fichier Excel ici</div>
+          <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 5px;">(Colonne A uniquement)</div>
           <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls">
         </label>
       </div>
 
-      <!-- Zone de statut (Remplace la liste) -->
+      <!-- Zone de statut -->
       <div id="importStatus" class="status-card">
-        <div style="color: var(--success); font-weight: bold; margin-bottom: 5px;">✅ Fichier chargé !</div>
-        <div id="importCount" style="color: #cdd6f4; font-size: 0.9rem;"></div>
-        <div style="color: #a6adc8; font-size: 0.8rem; margin-top: 5px;">La planche a été générée automatiquement.</div>
+        <div style="color: var(--success); font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+           <span>✅</span> Import réussi
+        </div>
+        <div id="importCount" style="color: #fff; font-size: 0.95rem; font-weight: 600;"></div>
+        <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px;">La planche a été générée.</div>
       </div>
 
       <div class="actions" style="margin-top: auto;">
-         <button class="action-btn" id="regenerateBatchBtn" style="background:var(--accent); color:#1e1e2e; display:none;">🔄 VOIR LA PLANCHE</button>
-         <button class="action-btn" id="clearDataBtn" style="background:#f38ba8; color:#1e1e2e; display:none;">🗑️ EFFACER DONNÉES</button>
+         <button class="action-btn" id="regenerateBatchBtn" style="display:none;">
+           <span>🔄</span> Voir la planche
+         </button>
+         <button class="action-btn" id="clearDataBtn" style="display:none;">
+           <span>🗑️</span> Effacer tout
+         </button>
       </div>
     </div>
   </aside>
 
   <main class="main-content">
-    <div style="position:absolute; top:20px; color:#666; font-size:12px;">Aperçu écran (60%)</div>
+    <div style="position:absolute; top:20px; color:rgba(255,255,255,0.5); font-size:12px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;">
+      Aperçu en direct (65%)
+    </div>
     
     <div class="sheet-container" id="capture-zone">
       <div id="pageSheet" class="sheet a4 portrait">
@@ -359,7 +438,6 @@
 
       excelInput: document.getElementById("excelInput"),
       dropZone: document.getElementById("dropZone"),
-      // Elements simplifiés
       importStatus: document.getElementById("importStatus"),
       importCount: document.getElementById("importCount"),
       clearDataBtn: document.getElementById("clearDataBtn"),
@@ -400,53 +478,39 @@
       refs.printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
     }
 
-    // Fonction principale de génération
     function generer() {
         const scale = parseFloat(refs.slider.value);
         refs.sliderVal.textContent = scale;
-        
-        // Nettoyage
         refs.target.innerHTML = "";
 
         if (appState.mode === 'batch' && appState.batchData.length > 0) {
-            // --- MODE PLANCHE (BATCH) ---
             refs.target.classList.add('grid-mode');
-            
-            // On boucle sur tous les codes importés
             appState.batchData.forEach(code => {
                 const itemDiv = document.createElement("div");
                 itemDiv.className = "barcode-item";
-                
-                // On crée un conteneur pour le code (SVG ou Canvas)
                 const container = createBarcodeElement(code, scale);
                 if (container) itemDiv.appendChild(container);
-                
                 refs.target.appendChild(itemDiv);
             });
-
         } else {
-            // --- MODE UNIQUE ---
             refs.target.classList.remove('grid-mode');
             const texte = refs.texte.value.trim();
             if (!texte && refs.type.value !== "QRCODE") return;
-            
             const element = createBarcodeElement(texte, scale);
             if (element) refs.target.appendChild(element);
         }
     }
 
-    // Helper pour créer un seul élément barcode (réutilisé par le batch et le single)
     function createBarcodeElement(text, scale) {
         const type = refs.type.value;
         const displayValue = refs.showText.checked;
-        
         try {
             if (type === "CODE128") {
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 JsBarcode(svg, text, {
                     format: "CODE128", lineColor: "#000", background: "#ffffff",
                     displayValue: displayValue, fontSize: 14 * scale, height: 50 * scale,
-                    width: 2 * scale, margin: 5 * scale // Marges réduites pour le batch
+                    width: 2 * scale, margin: 5 * scale
                 });
                 return svg;
             } else if (type === "EAN13") {
@@ -461,18 +525,15 @@
                 return svg;
             } else if (type === "QRCODE") {
                 const canvas = document.createElement("canvas");
-                const qrWidth = Math.floor(150 * scale); // Base plus petite pour le batch
+                const qrWidth = Math.floor(150 * scale);
                 QRCode.toCanvas(canvas, text || "https://exemple.com", {
                     width: qrWidth, margin: 1, color: { dark: "#000000", light: "#ffffff" }
                 }, function (error) { if (error) console.error(error); });
                 return canvas;
             }
         } catch (e) {
-            console.warn("Erreur génération pour " + text, e);
             const errDiv = document.createElement("div");
-            errDiv.style.color = "red";
-            errDiv.style.fontSize = "10px";
-            errDiv.innerText = "Inv.";
+            errDiv.style.color = "red"; errDiv.style.fontSize = "10px"; errDiv.innerText = "Err.";
             return errDiv;
         }
         return null;
@@ -485,11 +546,10 @@
       return rem === 0 ? 0 : 10 - rem;
     }
 
-    // --- FONCTIONS IMPORT EXCEL ---
+    // --- IMPORT EXCEL ---
     function handleFile(e) {
       const file = e.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const data = e.target.result;
@@ -497,16 +557,11 @@
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
         let codes = json.map(row => row[0]).filter(cell => cell !== undefined && cell !== null && cell !== "");
         
-        // Mise à jour de l'état
         appState.batchData = codes;
         appState.mode = 'batch'; 
-
         updateImportStatus(codes.length);
-        
-        // On bascule sur la vue générateur
         switchTab('tab-generator');
         generer();
       };
@@ -517,8 +572,8 @@
         if(count > 0) {
             refs.importStatus.style.display = 'block';
             refs.importCount.textContent = `${count} codes détectés.`;
-            refs.regenerateBatchBtn.style.display = 'inline-block';
-            refs.clearDataBtn.style.display = 'inline-block';
+            refs.regenerateBatchBtn.style.display = 'inline-flex';
+            refs.clearDataBtn.style.display = 'inline-flex';
         } else {
             resetImportUI();
         }
@@ -532,22 +587,16 @@
     }
 
     // --- LISTENERS ---
-    // Si l'utilisateur tape du texte manuellement, on repasse en mode single
-    refs.texte.addEventListener("input", () => {
-        appState.mode = 'single';
-        generer();
-    });
-
+    refs.texte.addEventListener("input", () => { appState.mode = 'single'; generer(); });
     refs.type.addEventListener("change", generer);
     refs.showText.addEventListener("change", generer);
     refs.slider.addEventListener("input", generer);
     refs.titleInput.addEventListener("input", updateTitle);
     refs.titleSizeSlider.addEventListener("input", updateTitle);
-    
     refs.formatInputs.forEach(input => input.addEventListener("change", updatePageConfig));
     refs.orientationInputs.forEach(input => input.addEventListener("change", updatePageConfig));
-    
     refs.printBtn.addEventListener("click", () => window.print());
+    
     refs.downloadBtn.addEventListener("click", () => {
         const container = document.querySelector('.sheet-container');
         const originalTransform = container.style.transform;
@@ -562,23 +611,18 @@
         });
     });
 
-    // Excel
     refs.excelInput.addEventListener("change", handleFile);
-    
-    refs.clearDataBtn.addEventListener("click", () => {
-      appState.batchData = [];
-      appState.mode = 'single';
-      resetImportUI();
-      generer(); // Vide la planche
-    });
-    
-    // Bouton pour forcer le retour au mode planche
+    refs.clearDataBtn.addEventListener("click", () => { appState.batchData = []; appState.mode = 'single'; resetImportUI(); generer(); });
     refs.regenerateBatchBtn.addEventListener("click", () => {
-        if(appState.batchData.length > 0) {
-            appState.mode = 'batch';
-            switchTab('tab-generator');
-            generer();
-        }
+        if(appState.batchData.length > 0) { appState.mode = 'batch'; switchTab('tab-generator'); generer(); }
+    });
+
+    // Effet Drag & Drop Visuel
+    const dz = refs.dropZone;
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--accent)'; dz.style.background = 'rgba(99, 102, 241, 0.2)'; });
+    dz.addEventListener('dragleave', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--glass-border)'; dz.style.background = 'rgba(0,0,0,0.2)'; });
+    dz.addEventListener('drop', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--glass-border)'; dz.style.background = 'rgba(0,0,0,0.2)'; 
+        if(e.dataTransfer.files.length) { refs.excelInput.files = e.dataTransfer.files; handleFile({target: refs.excelInput}); } 
     });
 
     window.addEventListener('load', () => { updatePageConfig(); generer(); updateTitle(); });
