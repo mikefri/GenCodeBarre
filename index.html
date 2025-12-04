@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GenCodeBarres v2.5 - Workflow Data</title>
+  <title>GenCodeBarres v2.3 - WYSIWYG (Format A3 Unlock)</title>
   <meta name="theme-color" content="#0f172a">
 
   <!-- Polices Modernes -->
@@ -57,7 +57,7 @@
 
     /* --- SIDEBAR --- */
     .sidebar {
-      width: 340px; 
+      width: 320px; 
       background: var(--bg-sidebar);
       border-right: 1px solid var(--border-subtle);
       padding: 0; 
@@ -85,7 +85,7 @@
 
     .sidebar-content {
       padding: 24px;
-      display: flex; flex-direction: column; gap: 20px;
+      display: flex; flex-direction: column; gap: 24px;
       flex: 1; 
     }
 
@@ -107,7 +107,6 @@
       padding: 3px;
       border-radius: var(--radius);
       border: 1px solid var(--border-subtle);
-      flex-shrink: 0; /* Ne pas réduire */
     }
     .tab-btn {
       flex: 1; 
@@ -128,8 +127,8 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
 
-    .tab-content { display: none; flex-direction: column; gap: 20px; }
-    .tab-content.active { display: flex; animation: fadeIn 0.3s ease; flex: 1; }
+    .tab-content { display: none; flex-direction: column; gap: 20px; height: 100%; }
+    .tab-content.active { display: flex; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
     /* --- FORMULAIRES --- */
@@ -145,7 +144,7 @@
     }
 
     /* Inputs Pro */
-    input[type="text"], select, input[type="number"] { 
+    input[type="text"], select { 
       padding: 10px 12px; 
       border-radius: var(--radius); 
       border: 1px solid var(--border-subtle); 
@@ -156,7 +155,7 @@
       font-family: inherit;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-    input[type="text"]:focus, select:focus, input[type="number"]:focus {
+    input[type="text"]:focus, select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 1px var(--primary);
     }
@@ -189,29 +188,8 @@
 
     .divider { border: 0; border-top: 1px solid var(--border-subtle); width: 100%; margin: 5px 0; }
 
-    /* Grid Settings Panel */
-    .grid-settings {
-      background: var(--bg-panel);
-      padding: 12px;
-      border-radius: var(--radius);
-      display: none; /* Hidden by default */
-      flex-direction: column;
-      gap: 10px;
-      border: 1px solid var(--border-subtle);
-    }
-    .grid-settings.active { display: flex; }
-    
-    .grid-row { display: flex; gap: 10px; }
-    .grid-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .grid-col label { font-size: 0.7rem; color: var(--text-secondary); }
-    .grid-col input { padding: 6px; font-size: 0.8rem; }
-
     /* --- BOUTONS --- */
-    .actions { 
-      margin-top: auto; /* Pousse les actions vers le bas */
-      display: flex; flex-direction: column; gap: 10px; 
-      padding-top: 20px; border-top: 1px solid var(--border-subtle); 
-    }
+    .actions { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
     button.action-btn { 
       padding: 10px; border-radius: var(--radius); border: 1px solid transparent; 
       font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: all 0.15s;
@@ -290,64 +268,32 @@
     .sheet {
       background: white; color: black;
       display: flex; flex-direction: column; 
+      /* Alignement FIXE pour éviter que le centrage ne bouge quand on ajoute du contenu */
       align-items: center; justify-content: flex-start; 
       position: relative; 
       box-sizing: border-box;
-      padding: 10mm; /* Défaut */
-      overflow: hidden;
+      padding: 10mm; /* Marge interne standard */
       
-      /* Variables CSS dynamiques pour le mode étiquettes */
-      --mt: 10mm; --ml: 10mm; --cols: 3; --rows: 8; --lh: 36mm;
+      /* DIMENSIONS FIXES STRICTES (Blockage) */
+      overflow: hidden;
     }
     
-    /* Mode "Flux" standard */
     #canvas-target { 
       display: flex; justify-content: center; align-items: center; width: 100%; flex: 1; 
+      /* On s'assure que le contenu peut scroller si besoin à l'intérieur mais pas casser la page */
     }
     #canvas-target.grid-mode { flex-wrap: wrap; align-content: flex-start; gap: 15px; }
-    
-    /* --- NOUVEAU : Mode Planche Étiquettes (Grid Strict) --- */
-    .sheet.label-mode {
-        padding-top: var(--mt);
-        padding-left: var(--ml);
-        padding-right: var(--ml); /* Symétrique */
-        padding-bottom: 0;
-        align-items: stretch; /* Important pour la grille */
-    }
-
-    .sheet.label-mode #canvas-target {
-        display: grid;
-        grid-template-columns: repeat(var(--cols), 1fr);
-        grid-template-rows: repeat(var(--rows), var(--lh)); /* Hauteur fixe par ligne */
-        gap: 0; /* Espacement géré par la taille des cellules */
-        align-content: start;
-        justify-content: start;
-        width: 100%;
-        height: auto;
-    }
-
-    .sheet.label-mode .barcode-item {
-        width: 100%;
-        height: 100%; /* Prend toute la cellule de la grille */
-        padding: 2px;
-        box-sizing: border-box;
-        border: 1px dashed rgba(0,0,0,0.1); /* Guide visuel léger */
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
     .barcode-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
     
     #title-display { 
       font-family: 'Arial', sans-serif; font-weight: bold; text-align: center; 
       width: 100%; word-wrap: break-word; color: #000;
-      margin-bottom: 20px; 
+      margin-bottom: 20px; /* Espace stable sous le titre */
       line-height: 1.2;
     }
     
     /* Dimensions Papier Strictes */
+    /* On utilise HEIGHT et pas MIN-HEIGHT pour bloquer le format */
     .sheet.a4.portrait  { width: 210mm; height: 297mm; } 
     .sheet.a4.landscape { width: 297mm; height: 210mm; }
     .sheet.a3.portrait  { width: 297mm; height: 420mm; }
@@ -355,33 +301,53 @@
     
     #barcode-wrapper { width: 100%; display: flex; justify-content: center; height: 100%; }
 
-    /* --- IMPRESSION --- */
+    /* --- IMPRESSION (CORRECTIF MAJEUR) --- */
     @media print {
+      /* Force l'imprimante à ne pas mettre de marge (le CSS gère tout) */
       @page { margin: 0; }
       
       body { 
-          background: white; height: auto; overflow: visible;
-          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+          background: white; 
+          height: auto; 
+          overflow: visible;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
       }
       
       .sidebar, .toolbar-preview, .sidebar-footer { display: none !important; }
       
+      /* Reset total des conteneurs de layout */
       .main-content, .preview-scroll-wrapper, .sheet-transform-layer { 
-        position: static !important; width: auto !important; height: auto !important; 
-        padding: 0 !important; margin: 0 !important; background: transparent !important; 
-        display: block !important; overflow: visible !important; transform: none !important; 
-        box-shadow: none !important; border: none !important;
+        position: static !important; 
+        width: auto !important; 
+        height: auto !important; 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        background: transparent !important; 
+        display: block !important; 
+        overflow: visible !important;
+        transform: none !important; /* CRUCIAL: Annule le zoom écran */
+        box-shadow: none !important;
+        border: none !important;
       }
 
       .sheet { 
-        margin: 0 !important; page-break-after: always; box-shadow: none !important; 
-        border: none !important; overflow: hidden !important; 
+        /* On ne force PAS width:100% ici, on garde les dimensions mm définies par les classes (.a4, etc)
+           Cela garantit que le layout flexbox interne a exactement le même espace qu'à l'écran. */
+        margin: 0 !important; 
+        page-break-after: always; 
+        box-shadow: none !important; 
+        border: none !important;
+        overflow: hidden !important; /* On garde le blocage demandé */
       }
       
-      /* En impression, on enlève les pointillés de guide des étiquettes */
-      .sheet.label-mode .barcode-item { border: none !important; }
+      /* Sécurité pour le layout grille en impression */
+      #canvas-target.grid-mode { 
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+      }
       
-      #canvas-target.grid-mode { display: flex !important; flex-wrap: wrap !important; gap: 15px !important; }
       .barcode-item { break-inside: avoid; }
     }
   </style>
@@ -391,7 +357,7 @@
 
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.5 (Data Flow)</span></div>
+      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.3 (A3 Unlock)</span></div>
     </div>
     
     <div class="sidebar-content">
@@ -400,18 +366,25 @@
         <button class="tab-btn" id="btn-tab-tools" data-target="tab-tools">Données</button>
       </div>
 
-      <!-- --- ONGLET 1 : GÉNÉRATEUR (Simplifié) --- -->
+      <!-- --- ONGLET 1 : GÉNÉRATEUR --- -->
       <div id="tab-generator" class="tab-content active">
         
         <div class="control-group">
           <label>Titre de page</label>
           <input type="text" id="customTitle" placeholder="Ex: Inventaire 2025">
         </div>
+        <div class="control-group">
+          <div class="range-header">
+            <label>Taille Titre</label>
+            <span id="titleSizeVal" class="range-value">3</span>
+          </div>
+          <input type="range" id="titleSizeSlider" min="1" max="10" step="0.5" value="3">
+        </div>
         
         <div class="divider"></div>
 
         <div class="control-group">
-          <label>Données (Code unique)</label>
+          <label>Données (Code)</label>
           <input type="text" id="texte" value="12345678" placeholder="Saisir le code...">
         </div>
 
@@ -423,43 +396,58 @@
             <option value="QRCODE">QR Code (Lien)</option>
           </select>
         </div>
-        
-        <div class="divider"></div>
-
-        <!-- CONFIG PAPIER (Reste ici car global) -->
-        <div class="control-group">
-          <div class="range-header"><label>Papier</label></div>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="format" value="a4" checked><span>A4</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="format" value="a3"><span>A3</span>
-            </label>
-            <label class="radio-option" style="border-left: 1px solid var(--border-subtle);">
-              <input type="radio" name="orientation" value="portrait" checked><span>Port.</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="orientation" value="landscape"><span>Pays.</span>
-            </label>
-          </div>
-        </div>
-        
-        <div class="control-group">
-          <div class="range-header">
-            <label>Échelle du Code</label>
-            <span id="codeSizeVal" class="range-value">1</span>
-          </div>
-          <input type="range" id="sizeSlider" min="0.5" max="15" step="0.1" value="1">
-        </div>
 
         <label class="checkbox-wrapper">
           <input type="checkbox" id="showText" checked>
           <span>Afficher le texte sous le code</span>
         </label>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <div class="range-header">
+            <label>Configuration Papier</label>
+          </div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="format" value="a4" checked>
+              <span>A4</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="format" value="a3">
+              <span>A3</span>
+            </label>
+            <label class="radio-option" style="border-left: 1px solid var(--border-subtle);">
+              <input type="radio" name="orientation" value="portrait" checked>
+              <span>Portrait</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="orientation" value="landscape">
+              <span>Paysage</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="range-header">
+            <label>Échelle du Code</label>
+            <span id="codeSizeVal" class="range-value">1</span>
+          </div>
+          <!-- MODIFICATION ICI : Max passé de 5 à 15 pour le format A3 -->
+          <input type="range" id="sizeSlider" min="0.5" max="15" step="0.1" value="1">
+        </div>
+
+        <div class="actions">
+          <button class="action-btn btn-print" id="printBtn">
+            Imprimer la page
+          </button>
+          <button class="action-btn btn-download" id="downloadBtn">
+            Sauvegarder en PNG
+          </button>
+        </div>
       </div>
 
-      <!-- --- ONGLET 2 : OUTILS EXCEL (Enrichi) --- -->
+      <!-- --- ONGLET 2 : OUTILS EXCEL --- -->
       <div id="tab-tools" class="tab-content">
         <div class="control-group">
           <label>Import Excel de masse</label>
@@ -470,72 +458,34 @@
             <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
           </label>
         </div>
+
+        <!-- Zone de statut -->
         <div id="importStatus" class="status-card">
-          <div style="color: #fff; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem;">Import terminé</div>
+          <div style="color: #fff; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem;">
+              Import terminé
+          </div>
           <div id="importCount" style="color: #a7f3d0; font-size: 0.85rem;"></div>
         </div>
 
-        <div class="divider"></div>
-
-        <!-- MODE ETIQUETTE TOGGLE (DÉPLACÉ ICI) -->
-        <label class="checkbox-wrapper" style="margin-top: 5px;">
-          <input type="checkbox" id="labelModeToggle">
-          <span style="font-weight: 600; color: #fff;">Activer Mode Planche Étiquettes</span>
-        </label>
-
-        <!-- PARAMETRES ETIQUETTES (DÉPLACÉ ICI) -->
-        <div id="labelSettings" class="grid-settings">
-           <div style="font-size: 0.75rem; color: var(--primary); margin-bottom: 5px;">Config: 3x8 (24 étiquettes)</div>
-           
-           <div class="grid-row">
-             <div class="grid-col">
-               <label>Marge Haut (mm)</label>
-               <input type="number" id="marginTopInput" value="4.5" step="0.5">
-             </div>
-             <div class="grid-col">
-               <label>Marge Gauche (mm)</label>
-               <input type="number" id="marginLeftInput" value="5" step="0.5">
-             </div>
-           </div>
-           
-           <div class="grid-row">
-             <div class="grid-col">
-               <label>Colonnes</label>
-               <input type="number" id="colsInput" value="3">
-             </div>
-             <div class="grid-col">
-               <label>Lignes</label>
-               <input type="number" id="rowsInput" value="8">
-             </div>
-           </div>
-
-           <div class="grid-row">
-             <div class="grid-col">
-                <label>Hauteur Case (mm)</label>
-                <input type="number" id="labelHeightInput" value="36">
-             </div>
-           </div>
-        </div>
-
-        <div style="margin-top: auto;"> <!-- Spacer pour les actions spécifiques -->
-           <button class="action-btn" id="clearDataBtn" style="display:none; width:100%; margin-bottom:10px;">
-              Effacer les données
+        <div class="actions" style="margin-top: auto;">
+           <button class="action-btn" id="regenerateBatchBtn" style="display:none;">
+             Voir la planche générée
+           </button>
+           <button class="action-btn" id="clearDataBtn" style="display:none;">
+             Effacer les données
            </button>
         </div>
       </div>
-
-      <!-- --- GLOBAL ACTIONS (Visibles partout) --- -->
-      <div class="actions">
-        <button class="action-btn btn-print" id="printBtn">Imprimer la page</button>
-        <button class="action-btn btn-download" id="downloadBtn">Sauvegarder en PNG</button>
-      </div>
-
     </div>
     
-    <div class="sidebar-footer"><span>Créé par Micfri</span></div>
+    <div class="sidebar-footer">
+      <span>Créé par Micfri</span>
+    </div>
   </aside>
 
   <main class="main-content">
+    
+    <!-- Barre d'outils flottante pour le Zoom -->
     <div class="toolbar-preview">
       <span>Zoom Aperçu</span>
       <input type="range" id="previewZoomSlider" min="0.3" max="1.5" step="0.05" value="0.65" style="width: 100px;">
@@ -573,8 +523,11 @@
       orientationInputs: document.querySelectorAll('input[name="orientation"]'),
       
       titleInput: document.getElementById("customTitle"),
+      titleSizeSlider: document.getElementById("titleSizeSlider"),
+      titleSizeVal: document.getElementById("titleSizeVal"),
       titleDisplay: document.getElementById("title-display"),
       
+      // Nouveau Zoom
       previewZoomSlider: document.getElementById("previewZoomSlider"),
       previewZoomVal: document.getElementById("previewZoomVal"),
       
@@ -586,17 +539,8 @@
       importStatus: document.getElementById("importStatus"),
       importCount: document.getElementById("importCount"),
       clearDataBtn: document.getElementById("clearDataBtn"),
-      // regenerateBatchBtn removed as logic is now immediate
-      btnTabGen: document.getElementById("btn-tab-gen"),
-      
-      // Mode Etiquettes
-      labelModeToggle: document.getElementById("labelModeToggle"),
-      labelSettings: document.getElementById("labelSettings"),
-      marginTopInput: document.getElementById("marginTopInput"),
-      marginLeftInput: document.getElementById("marginLeftInput"),
-      colsInput: document.getElementById("colsInput"),
-      rowsInput: document.getElementById("rowsInput"),
-      labelHeightInput: document.getElementById("labelHeightInput")
+      regenerateBatchBtn: document.getElementById("regenerateBatchBtn"),
+      btnTabGen: document.getElementById("btn-tab-gen")
     };
 
     // --- VARIABLES D'ÉTAT ---
@@ -625,93 +569,47 @@
     }
     refs.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.getAttribute('data-target'))));
 
-    // --- CONFIGURATION PAGE & ETIQUETTES ---
+    // --- FONCTIONS GENERATEUR ---
     function updateTitle() {
       refs.titleDisplay.textContent = refs.titleInput.value;
-      // Taille fixe raisonnable pour le titre
-      refs.titleDisplay.style.fontSize = '2em'; 
+      refs.titleDisplay.style.fontSize = refs.titleSizeSlider.value + 'em';
+      refs.titleSizeVal.textContent = refs.titleSizeSlider.value;
     }
 
     function updatePageConfig() {
       const format = document.querySelector('input[name="format"]:checked').value;
       const orientation = document.querySelector('input[name="orientation"]:checked').value;
-      
-      // Gestion classe de base
-      let baseClass = `sheet ${format} ${orientation}`;
-      if (refs.labelModeToggle.checked) {
-          baseClass += ' label-mode';
-          refs.labelSettings.classList.add('active');
-          refs.titleDisplay.style.display = 'none'; // Pas de titre en mode étiquettes strict
-      } else {
-          refs.labelSettings.classList.remove('active');
-          refs.titleDisplay.style.display = 'block';
-      }
-      
-      refs.pageSheet.className = baseClass;
-      
-      // Application des variables CSS pour les marges et grille
-      if(refs.labelModeToggle.checked) {
-          const mt = refs.marginTopInput.value + 'mm';
-          const ml = refs.marginLeftInput.value + 'mm';
-          const cols = refs.colsInput.value;
-          const rows = refs.rowsInput.value;
-          const lh = refs.labelHeightInput.value + 'mm';
-          
-          refs.pageSheet.style.setProperty('--mt', mt);
-          refs.pageSheet.style.setProperty('--ml', ml);
-          refs.pageSheet.style.setProperty('--cols', cols);
-          refs.pageSheet.style.setProperty('--rows', rows);
-          refs.pageSheet.style.setProperty('--lh', lh);
-      } else {
-          // Reset styles inline si on décoche
-          refs.pageSheet.style = ""; 
-      }
-
+      refs.pageSheet.className = `sheet ${format} ${orientation}`;
+      // On ajoute margin:0 dans la regle @page pour l'impression
       refs.printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
     }
 
-    // --- GENERATION ---
     function generer() {
-        updatePageConfig(); // S'assurer que les styles sont à jour
-        
         const scale = parseFloat(refs.slider.value);
         refs.sliderVal.textContent = scale;
         refs.target.innerHTML = "";
 
-        // Collecte des données à afficher
-        let dataToRender = [];
         if (appState.mode === 'batch' && appState.batchData.length > 0) {
-            dataToRender = appState.batchData;
-        } else {
-            const texte = refs.texte.value.trim();
-            if (texte || refs.type.value === "QRCODE") dataToRender = [texte];
-        }
-
-        // Si mode étiquette, on doit peut-être remplir des cases vides ?
-        // Pour l'instant on affiche juste ce qu'on a.
-        
-        if (dataToRender.length > 0) {
-            // Mode normal ou batch
-            if(appState.mode === 'batch' && !refs.labelModeToggle.checked) refs.target.classList.add('grid-mode');
-            else refs.target.classList.remove('grid-mode');
-
-            dataToRender.forEach(code => {
+            refs.target.classList.add('grid-mode');
+            appState.batchData.forEach(code => {
                 const itemDiv = document.createElement("div");
                 itemDiv.className = "barcode-item";
                 const container = createBarcodeElement(code, scale);
                 if (container) itemDiv.appendChild(container);
                 refs.target.appendChild(itemDiv);
             });
+        } else {
+            refs.target.classList.remove('grid-mode');
+            const texte = refs.texte.value.trim();
+            if (!texte && refs.type.value !== "QRCODE") return;
+            const element = createBarcodeElement(texte, scale);
+            if (element) refs.target.appendChild(element);
         }
     }
 
     function createBarcodeElement(text, scale) {
         const type = refs.type.value;
         const displayValue = refs.showText.checked;
-        
-        // Ajustement automatique de l'échelle si mode étiquette pour éviter dépassement
-        // (Simple heuristique, scale peut toujours être forcé par le slider)
-        
         try {
             if (type === "CODE128") {
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -770,7 +668,7 @@
         appState.batchData = codes;
         appState.mode = 'batch'; 
         updateImportStatus(codes.length);
-        // switchTab('tab-generator'); // SUPPRIMÉ : On reste sur l'onglet Data
+        switchTab('tab-generator');
         generer();
       };
       reader.readAsBinaryString(file);
@@ -780,6 +678,7 @@
         if(count > 0) {
             refs.importStatus.style.display = 'block';
             refs.importCount.textContent = `${count} codes importés avec succès.`;
+            refs.regenerateBatchBtn.style.display = 'flex';
             refs.clearDataBtn.style.display = 'flex';
         } else {
             resetImportUI();
@@ -788,6 +687,7 @@
 
     function resetImportUI() {
         refs.importStatus.style.display = 'none';
+        refs.regenerateBatchBtn.style.display = 'none';
         refs.clearDataBtn.style.display = 'none';
         refs.excelInput.value = "";
     }
@@ -798,34 +698,39 @@
     refs.showText.addEventListener("change", generer);
     refs.slider.addEventListener("input", generer);
     refs.titleInput.addEventListener("input", updateTitle);
-    
+    refs.titleSizeSlider.addEventListener("input", updateTitle);
     refs.formatInputs.forEach(input => input.addEventListener("change", updatePageConfig));
     refs.orientationInputs.forEach(input => input.addEventListener("change", updatePageConfig));
     refs.printBtn.addEventListener("click", () => window.print());
     
-    // Listeners Mode Étiquettes
-    refs.labelModeToggle.addEventListener("change", generer);
-    [refs.marginTopInput, refs.marginLeftInput, refs.colsInput, refs.rowsInput, refs.labelHeightInput]
-        .forEach(el => el.addEventListener("input", updatePageConfig));
-
     refs.downloadBtn.addEventListener("click", () => {
+        // Pour html2canvas, on enlève temporairement le scale visuel
         const originalTransform = refs.sheetLayer.style.transform;
         refs.sheetLayer.style.transform = "none";
+        
+        // On s'assure de capturer la feuille entière
         html2canvas(document.getElementById("pageSheet"), { 
-            scale: 2, backgroundColor: "#ffffff", logging: false 
-        }).then(canvas => {
+            scale: 2, 
+            backgroundColor: "#ffffff", 
+            logging: false 
+        })
+        .then(canvas => {
             const a = document.createElement("a");
             a.download = `etiquette_${Date.now()}.png`;
             a.href = canvas.toDataURL("image/png");
             a.click();
+            // On remet le zoom utilisateur
             refs.sheetLayer.style.transform = originalTransform; 
         });
     });
 
     refs.excelInput.addEventListener("change", handleFile);
     refs.clearDataBtn.addEventListener("click", () => { appState.batchData = []; appState.mode = 'single'; resetImportUI(); generer(); });
-    
-    // Drag & Drop
+    refs.regenerateBatchBtn.addEventListener("click", () => {
+        if(appState.batchData.length > 0) { appState.mode = 'batch'; switchTab('tab-generator'); generer(); }
+    });
+
+    // Effet Drag & Drop Visuel
     const dz = refs.dropZone;
     dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--primary)'; dz.style.background = 'rgba(59, 130, 246, 0.1)'; });
     dz.addEventListener('dragleave', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--border-subtle)'; dz.style.background = 'var(--bg-app)'; });
@@ -835,11 +740,11 @@
 
     // Initialisation
     window.addEventListener('load', () => { 
-        // Set zoom initial
-        refs.sheetLayer.style.transform = `scale(0.65)`;
         updatePageConfig(); 
         generer(); 
         updateTitle();
+        // Set zoom initial
+        refs.sheetLayer.style.transform = `scale(0.65)`;
     });
   </script>
 </body>
