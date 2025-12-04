@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GenCodeBarres v2.1 - Stable</title>
+  <title>GenCodeBarres v2.2 - WYSIWYG</title>
   <meta name="theme-color" content="#0f172a">
 
   <!-- Polices Modernes -->
@@ -301,20 +301,53 @@
     
     #barcode-wrapper { width: 100%; display: flex; justify-content: center; height: 100%; }
 
-    /* --- IMPRESSION --- */
+    /* --- IMPRESSION (CORRECTIF MAJEUR) --- */
     @media print {
-      body { background: white; height: auto; overflow: visible; }
-      .sidebar, .toolbar-preview { display: none !important; }
-      .main-content { 
-        position: static; width: 100% !important; height: auto !important; 
-        padding: 0 !important; margin: 0 !important; background: white !important; display: block !important; overflow: visible !important;
+      /* Force l'imprimante à ne pas mettre de marge (le CSS gère tout) */
+      @page { margin: 0; }
+      
+      body { 
+          background: white; 
+          height: auto; 
+          overflow: visible;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
       }
-      .preview-scroll-wrapper { display: block; width: 100%; height: auto; padding: 0; overflow: visible; }
-      .sheet-transform-layer { transform: none !important; box-shadow: none !important; margin: 0 !important; }
+      
+      .sidebar, .toolbar-preview, .sidebar-footer { display: none !important; }
+      
+      /* Reset total des conteneurs de layout */
+      .main-content, .preview-scroll-wrapper, .sheet-transform-layer { 
+        position: static !important; 
+        width: auto !important; 
+        height: auto !important; 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        background: transparent !important; 
+        display: block !important; 
+        overflow: visible !important;
+        transform: none !important; /* CRUCIAL: Annule le zoom écran */
+        box-shadow: none !important;
+        border: none !important;
+      }
+
       .sheet { 
-        width: 100% !important; height: 100% !important; margin: 0 !important; 
-        page-break-after: always; box-shadow: none; overflow: visible !important;
+        /* On ne force PAS width:100% ici, on garde les dimensions mm définies par les classes (.a4, etc)
+           Cela garantit que le layout flexbox interne a exactement le même espace qu'à l'écran. */
+        margin: 0 !important; 
+        page-break-after: always; 
+        box-shadow: none !important; 
+        border: none !important;
+        overflow: hidden !important; /* On garde le blocage demandé */
       }
+      
+      /* Sécurité pour le layout grille en impression */
+      #canvas-target.grid-mode { 
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+      }
+      
       .barcode-item { break-inside: avoid; }
     }
   </style>
@@ -324,7 +357,7 @@
 
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.1 Stable</span></div>
+      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.2 Wysiwyg</span></div>
     </div>
     
     <div class="sidebar-content">
@@ -546,6 +579,7 @@
       const format = document.querySelector('input[name="format"]:checked').value;
       const orientation = document.querySelector('input[name="orientation"]:checked').value;
       refs.pageSheet.className = `sheet ${format} ${orientation}`;
+      // On ajoute margin:0 dans la regle @page pour l'impression
       refs.printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
     }
 
