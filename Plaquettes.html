@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur de Planches - Standalone</title>
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Polices Modernes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Toutes les librairies nécessaires pour le visuel -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    :root { 
+      /* Palette Pro SaaS (Slate) */
+      --bg-app: #0f172a;       
+      --bg-sidebar: #1e293b;   
+      --bg-panel: #334155;     
+      
+      --border-subtle: #334155;
+      --border-focus: #3b82f6;
+
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      
+      --primary: #3b82f6;      
+      --primary-hover: #2563eb;
+      
+      --success: #10b981;
+      --danger: #ef4444;
+
+      --radius: 6px; 
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main); 
+      margin: 0; padding: 0; 
+      height: 100vh; 
+      display: flex; 
+      overflow: hidden; 
+    }
+
+    /* --- SIDEBAR (GAUCHE) --- */
+    .sidebar {
+      width: 350px; 
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex; flex-direction: column;
+      z-index: 10; 
+      flex-shrink: 0;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+    }
+
+    .sidebar-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-sidebar);
+    }
+
+    .app-title {
+      margin: 0; color: #fff; font-weight: 600; font-size: 1.1rem;
+    }
+
+    .sidebar-content {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* Form Elements */
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .control-group label { font-weight: 500; font-size: 0.8rem; color: var(--text-secondary); }
+
+    input[type="number"], select { 
+      padding: 10px 12px; 
+      border-radius: var(--radius); 
+      border: 1px solid var(--border-subtle); 
+      background: var(--bg-app); 
+      color: #fff; 
+      outline: none; 
+      font-size: 0.9rem;
+      width: 100%; box-sizing: border-box;
+    }
+    input[type="number"]:focus, select:focus { border-color: var(--primary); }
+
+    .divider { border: 0; border-top: 1px solid var(--border-subtle); width: 100%; margin: 10px 0; }
+
+    /* Import Zone */
+    .drop-zone {
+      border: 1px dashed var(--border-subtle);
+      background: var(--bg-app);
+      border-radius: var(--radius);
+      padding: 25px 15px;
+      text-align: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .drop-zone:hover { border-color: var(--primary); color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+
+    .status-card {
+        background: #064e3b; border: 1px solid #059669; border-radius: var(--radius);
+        padding: 10px; display: none; margin-top: 10px;
+    }
+
+    /* Grid Settings */
+    .grid-settings {
+      background: var(--bg-panel);
+      padding: 12px;
+      border-radius: var(--radius);
+      display: flex; flex-direction: column; gap: 10px;
+      border: 1px solid var(--border-subtle);
+    }
+    .grid-row { display: flex; gap: 10px; }
+    .grid-col { flex: 1; }
+
+    /* Actions Footer */
+    .sidebar-footer {
+      padding: 15px 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex; flex-direction: column; gap: 10px;
+      background: var(--bg-sidebar);
+    }
+
+    button.action-btn { 
+      padding: 10px; border-radius: var(--radius); border: 1px solid transparent; 
+      font-weight: 500; font-size: 0.9rem; cursor: pointer;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+    .btn-print { background: var(--text-main); color: var(--bg-app); }
+    .btn-download { background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle); }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); font-size: 0.8rem; }
+
+    /* --- MAIN PREVIEW (DROITE) --- */
+    .main-content {
+      flex: 1; 
+      background: #020617; 
+      background-image: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 20px 20px;
+      display: flex; flex-direction: column; 
+      position: relative;
+      overflow: hidden; 
+    }
+
+    .toolbar-preview {
+      position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+      padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-subtle);
+      display: flex; align-items: center; gap: 15px; z-index: 50;
+      color: white; font-size: 0.8rem;
+    }
+
+    .preview-scroll-wrapper {
+      width: 100%; height: 100%;
+      overflow: auto;
+      display: flex; justify-content: center; align-items: flex-start;
+      padding: 60px 40px; 
+      box-sizing: border-box;
+    }
+
+    .sheet-transform-layer {
+      transform-origin: top center;
+      transition: transform 0.2s ease-out;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    /* FEUILLE */
+    .sheet {
+      background: white; color: black;
+      position: relative; box-sizing: border-box; overflow: hidden;
+      width: 210mm; height: 297mm; /* A4 Portrait Default */
+      
+      /* Variables CSS Grille */
+      --mt: 4.5mm; --ml: 5mm; --cols: 3; --rows: 8; --lh: 36mm;
+      
+      padding-top: var(--mt);
+      padding-left: var(--ml);
+      padding-right: var(--ml);
+    }
+
+    /* Grille CSS */
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        grid-template-rows: repeat(var(--rows), var(--lh));
+        width: 100%;
+        height: auto;
+        justify-content: start;
+        align-content: start;
+    }
+
+    .barcode-cell {
+        width: 100%; height: 100%;
+        border: 1px dashed rgba(0,0,0,0.1); /* Guides visuels */
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        overflow: hidden; box-sizing: border-box;
+        padding: 2px;
+    }
+
+    /* Impression */
+    @media print {
+        @page { margin: 0; }
+        .sidebar, .toolbar-preview { display: none !important; }
+        .main-content, .preview-scroll-wrapper, .sheet-transform-layer { 
+            display: block !important; position: static !important; 
+            width: auto !important; height: auto !important; 
+            overflow: visible !important; transform: none !important; 
+            margin: 0 !important; padding: 0 !important; background: white !important;
+        }
+        .sheet { margin: 0 !important; box-shadow: none !important; }
+        .barcode-cell { border: none !important; } /* Cacher les guides à l'impression */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR CONFIG -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="app-title">Gestion Étiquettes</div>
+    </div>
+
+    <div class="sidebar-content">
+      
+      <!-- IMPORT -->
+      <div class="control-group">
+        <label>1. Source de Données (Excel)</label>
+        <label class="drop-zone" id="dropZone">
+          <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
+          <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
+          <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
+        </label>
+        
+        <div id="importStatus" class="status-card">
+          <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
+          <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
+        </div>
+        
+        <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- TYPE CODE -->
+      <div class="control-group">
+         <label>2. Type de Code</label>
+         <select id="codeType">
+            <option value="CODE128">Code 128</option>
+            <option value="EAN13">EAN-13</option>
+            <option value="QRCODE">QR Code</option>
+         </select>
+      </div>
+
+      <!-- REGLAGES GRILLE -->
+      <div class="control-group">
+         <label>3. Configuration Grille</label>
+         <div class="grid-settings">
+            <div class="grid-row">
+               <div class="grid-col">
+                  <label>Marge Haut</label>
+                  <input type="number" id="marginTop" value="4.5" step="0.5">
+               </div>
+               <div class="grid-col">
+                  <label>Marge Gauche</label>
+                  <input type="number" id="marginLeft" value="5" step="0.5">
+               </div>
+            </div>
+            <div class="grid-row">
+               <div class="grid-col">
+                  <label>Colonnes</label>
+                  <input type="number" id="nbCols" value="3">
+               </div>
+               <div class="grid-col">
+                  <label>Lignes</label>
+                  <input type="number" id="nbRows" value="8">
+               </div>
+            </div>
+            <div class="grid-row">
+               <div class="grid-col">
+                  <label>H. Étiquette (mm)</label>
+                  <input type="number" id="rowHeight" value="36">
+               </div>
+               <div class="grid-col">
+                   <label>Échelle Code</label>
+                   <input type="number" id="codeScale" value="1" step="0.1" min="0.5" max="3">
+               </div>
+            </div>
+         </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="action-btn btn-print" onclick="window.print()">Imprimer</button>
+      <button class="action-btn btn-download" id="downloadBtn">Télécharger PNG</button>
+    </div>
+  </aside>
+
+  <!-- MAIN PREVIEW -->
+  <main class="main-content">
+    <div class="toolbar-preview">
+       <span>Zoom</span>
+       <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.1" value="0.7">
+    </div>
+
+    <div class="preview-scroll-wrapper">
+       <div class="sheet-transform-layer" id="sheetLayer" style="transform: scale(0.7);">
+          <!-- LA FEUILLE -->
+          <div id="pageSheet" class="sheet">
+             <div id="gridContainer" class="grid-container">
+                <!-- Les codes seront injectés ici -->
+                <div class="barcode-cell" style="color:#aaa; font-size:0.8rem;">
+                   (Zone d'aperçu - Importez un fichier)
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+  </main>
+
+  <script>
+    const refs = {
+        excelInput: document.getElementById('excelInput'),
+        dropZone: document.getElementById('dropZone'),
+        importStatus: document.getElementById('importStatus'),
+        importCount: document.getElementById('importCount'),
+        clearBtn: document.getElementById('clearDataBtn'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        
+        gridContainer: document.getElementById('gridContainer'),
+        pageSheet: document.getElementById('pageSheet'),
+        sheetLayer: document.getElementById('sheetLayer'),
+        zoomSlider: document.getElementById('zoomSlider'),
+        
+        // Inputs Config
+        codeType: document.getElementById('codeType'),
+        marginTop: document.getElementById('marginTop'),
+        marginLeft: document.getElementById('marginLeft'),
+        nbCols: document.getElementById('nbCols'),
+        nbRows: document.getElementById('nbRows'),
+        rowHeight: document.getElementById('rowHeight'),
+        codeScale: document.getElementById('codeScale')
+    };
+
+    let appData = []; // Stockage des codes
+
+    // --- GESTION DU ZOOM ---
+    refs.zoomSlider.addEventListener('input', (e) => {
+        refs.sheetLayer.style.transform = `scale(${e.target.value})`;
+    });
+
+    // --- MISE A JOUR CSS GRILLE ---
+    function updateGridCSS() {
+        const style = refs.pageSheet.style;
+        style.setProperty('--mt', refs.marginTop.value + 'mm');
+        style.setProperty('--ml', refs.marginLeft.value + 'mm');
+        style.setProperty('--cols', refs.nbCols.value);
+        style.setProperty('--rows', refs.nbRows.value);
+        style.setProperty('--lh', refs.rowHeight.value + 'mm');
+    }
+
+    // Listeners sur tous les inputs de config
+    [refs.marginTop, refs.marginLeft, refs.nbCols, refs.nbRows, refs.rowHeight, refs.codeScale, refs.codeType]
+        .forEach(el => el.addEventListener('input', () => {
+            updateGridCSS();
+            renderBarcodes();
+        }));
+
+    // --- RENDU DES CODES ---
+    function renderBarcodes() {
+        refs.gridContainer.innerHTML = '';
+        const scale = parseFloat(refs.codeScale.value);
+        
+        if (appData.length === 0) {
+            // Afficher un exemple fictif si vide
+            createCell("EXEMPLE", scale, true);
+            return;
+        }
+
+        appData.forEach(code => {
+            createCell(code, scale);
+        });
+    }
+
+    function createCell(text, scale, isDemo = false) {
+        const cell = document.createElement('div');
+        cell.className = 'barcode-cell';
+        if(isDemo) cell.style.opacity = "0.3";
+
+        try {
+            const type = refs.codeType.value;
+            let element;
+
+            if (type === 'QRCODE') {
+                element = document.createElement('canvas');
+                QRCode.toCanvas(element, text, { 
+                    margin: 0, 
+                    width: 100 * scale 
+                });
+            } else {
+                element = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                // Correction EAN13 check digit
+                let codeText = text;
+                if(type === 'EAN13') {
+                    codeText = text.replace(/\D/g, "");
+                    if(codeText.length === 12) codeText += calculCheckDigit(codeText);
+                }
+                
+                JsBarcode(element, codeText, {
+                    format: type,
+                    lineColor: "#000",
+                    width: 2 * scale,
+                    height: 50 * scale,
+                    displayValue: true,
+                    margin: 5
+                });
+            }
+            cell.appendChild(element);
+        } catch(e) {
+            cell.textContent = "Erreur";
+            cell.style.color = "red";
+        }
+        
+        refs.gridContainer.appendChild(cell);
+    }
+
+    function calculCheckDigit(ean12) {
+      let sum = 0;
+      for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
+      const rem = sum % 10;
+      return rem === 0 ? 0 : 10 - rem;
+    }
+
+    // --- IMPORT EXCEL ---
+    function handleFile(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            
+            // Filtre colonne A
+            appData = json.map(r => r[0]).filter(c => c !== undefined && c !== "");
+            
+            // UI Update
+            refs.importStatus.style.display = 'block';
+            refs.importCount.textContent = `${appData.length} codes chargés`;
+            refs.clearBtn.style.display = 'inline-flex';
+            
+            renderBarcodes();
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    refs.excelInput.addEventListener('change', handleFile);
+    
+    // Clear
+    refs.clearBtn.addEventListener('click', () => {
+        appData = [];
+        refs.importStatus.style.display = 'none';
+        refs.clearBtn.style.display = 'none';
+        refs.excelInput.value = "";
+        renderBarcodes();
+    });
+
+    // Download PNG
+    refs.downloadBtn.addEventListener('click', () => {
+        const originalTransform = refs.sheetLayer.style.transform;
+        refs.sheetLayer.style.transform = "none"; // Reset zoom pour capture
+        
+        html2canvas(refs.pageSheet, { scale: 2 }).then(canvas => {
+            const a = document.createElement('a');
+            a.download = 'planche_etiquettes.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+            refs.sheetLayer.style.transform = originalTransform; // Restore zoom
+        });
+    });
+
+    // Init
+    updateGridCSS();
+    renderBarcodes(); // Affiche l'exemple au démarrage
+
+  </script>
+</body>
+</html>
