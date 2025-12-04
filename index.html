@@ -351,8 +351,16 @@
       .barcode-item { break-inside: avoid; }
     }
 #btn-tab-tools {
-    text-decoration: none;  /* Indispensable pour enlever le soulignement du lien */
-    color: white;           /* Indispensable pour ne pas avoir le bleu par défaut du lien */
+    /* 1. On enlève le style "lien" */
+    text-decoration: none !important;
+    color: white !important;
+
+    /* 2. On active le mode "Flexbox" pour pouvoir centrer */
+    display: inline-flex !important; /* Rend le lien capable de gérer l'alignement */
+    
+    /* 3. On centre le texte */
+    justify-content: center; /* Centre horizontalement (gauche/droite) */
+    align-items: center;     /* Centre verticalement (haut/bas) */
 }
     
   </style>
