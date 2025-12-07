@@ -20,86 +20,88 @@
 <body>
 
 <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="app-title">Gestion Étiquettes</div>
-    </div>
+    <div class="sidebar-header">
+      <div class="app-title">Gestion Étiquettes</div>
+    </div>
 
-    <div class="sidebar-content">
-        <div class="tabs-nav">
-          <a href="https://mikefri.github.io/GenCodeBarre" class="tab-btn" id="btn-tab-tools">Éditeur</a>
-          <button class="tab-btn" id="btn-tab-tools" data-target="tab-tools">Données</button>
-        </div>
-        
-        <div class="control-group">
-            <label>1. Source de Données (Excel)</label>
-            <label class="drop-zone" id="dropZone">
-              <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
-              <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
-              <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
-            </label>
-            
-            <div id="importStatus" class="status-card">
-              <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
-              <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
-            </div>
-            
-            <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer</button>
-        </div>
+    <div class="sidebar-content">
+        <div class="tabs-nav">
+          <a href="https://mikefri.github.io/GenCodeBarre" class="tab-btn" id="btn-tab-tools">Éditeur</a>
+          <button class="tab-btn" id="btn-tab-tools" data-target="tab-tools">Données</button>
+        </div>
+        
+        <div class="control-group">
+            <label>1. Source de Données (Excel)</label>
+            <label class="drop-zone" id="dropZone">
+              <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
+              <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
+              <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
+            </label>
+            
+            <div id="importStatus" class="status-card">
+              <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
+              <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
+            </div>
+            
+            <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer</button>
+        </div>
 
-        <div class="divider"></div>
+        <div class="divider"></div>
 
-        <div class="control-group">
-           <label>2. Type de Code</label>
-           <select id="codeType">
-              <option value="CODE128">Code 128</option>
-              <option value="EAN13">EAN-13</option>
-              <option value="QRCODE">QR Code</option>
-           </select>
-        </div>
+        <div class="control-group">
+           <label>2. Type de Code</label>
+           <select id="codeType">
+              <option value="CODE128">Code 128</option>
+              <option value="EAN13">EAN-13</option>
+              <option value="QRCODE">QR Code</option>
+           </select>
+        </div>
 
-        <div class="control-group">
-           <label>3. Configuration Grille</label>
-           <div class="grid-settings">
-              <div class="grid-row">
-                 <div class="grid-col">
-                   <label>Marge Haut</label>
-                   <input type="number" id="marginTop" value="4.5" step="0.5">
-                 </div>
-                 <div class="grid-col">
-                   <label>Marge Gauche</label>
-                   <input type="number" id="marginLeft" value="5" step="0.5">
-                 </div>
-              </div>
-              <div class="grid-row">
-                 <div class="grid-col">
-                   <label>Colonnes</label>
-                   <input type="number" id="nbCols" value="3">
-                 </div>
-                 <div class="grid-col">
-                   <label>Lignes</label>
-                   <input type="number" id="nbRows" value="8">
-                 </div>
-              </div>
-              <div class="grid-row">
-                 <div class="grid-col">
-                   <label>H. Étiquette (mm)</label>
-                   <input type="number" id="rowHeight" value="36">
-                 </div>
-                 <div class="grid-col">
-                    <label>Échelle Code</label>
-                    <input type="number" id="codeScale" value="1" step="0.1" min="0.5" max="3">
-                 </div>
-              </div>
-           </div>
-        </div>
-    </div> <div class="sidebar-footer">
-      <button class="action-btn btn-print" onclick="window.print()">Imprimer</button>
-      <button class="action-btn btn-download" id="downloadBtn">Télécharger PNG</button>
-    </div>
-    
-    <div class="sidebar-signature">
-        Créé par Micfri
-    </div>
+        <div class="control-group">
+           <label>3. Configuration Grille</label>
+           <div class="grid-settings">
+              <div class="grid-row">
+                 <div class="grid-col">
+                   <label>Marge Haut</label>
+                   <input type="number" id="marginTop" value="4.5" step="0.5">
+                 </div>
+                 <div class="grid-col">
+                   <label>Marge Gauche</label>
+                   <input type="number" id="marginLeft" value="5" step="0.5">
+                 </div>
+              </div>
+              <div class="grid-row">
+                 <div class="grid-col">
+                   <label>Colonnes</label>
+                   <input type="number" id="nbCols" value="3">
+                 </div>
+                 <div class="grid-col">
+                   <label>Lignes</label>
+                   <input type="number" id="nbRows" value="8">
+                 </div>
+              </div>
+              <div class="grid-row">
+                 <div class="grid-col">
+                   <label>H. Étiquette (mm)</label>
+                   <input type="number" id="rowHeight" value="36">
+                 </div>
+                 <div class="grid-col">
+                    <label>Échelle Code</label>
+                    <input type="number" id="codeScale" value="1" step="0.1" min="0.5" max="3">
+                 </div>
+              </div>
+           </div>
+        </div>
+    </div> 
+
+    <div class="sidebar-footer">
+      <button class="action-btn btn-print" onclick="window.print()">Imprimer</button>
+      <button class="action-btn btn-download" id="downloadBtn">Télécharger PNG</button>
+    </div>
+    
+    <div class="sidebar-signature">
+        Créé par Micfri
+    </div>
 
 </aside>
  
