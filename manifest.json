@@ -1,5 +1,5 @@
 {
-  "name": "GenCodeBarre PWA",
+  "name": "GenCodeBarre",
   "short_name": "GenCode",
   "description": "Générateur de codes-barres et QR codes hors ligne.",
   "start_url": "index.html",
