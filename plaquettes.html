@@ -6,7 +6,908 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Planches Multi-Pages - Standalone</title>
     <meta name="theme-color" content="#0f172a">
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Planches Multi-Pages - Standalone</title>
+    <meta name="theme-color" content="#0f172a">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            /* Palette Pro SaaS (Slate) */
+            --bg-app: #0f172a;
+            --bg-sidebar: #1e293b;
+            --bg-panel: #334155;
+
+            --border-subtle: #334155;
+            --border-focus: #3b82f6;
+
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+
+            --success: #10b981;
+            --danger: #ef4444;
+
+            --radius: 6px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR (GAUCHE) --- */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            flex-shrink: 0;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- ONGLETS --- */
+        .tabs-nav {
+            display: flex;
+            background: #0f172a;
+            padding: 3px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-panel);
+            color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-sidebar);
+        }
+
+        .app-title {
+            margin: 0;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-content {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Form Elements */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        input[type="number"],
+        select {
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-app);
+            color: #fff;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        .divider {
+            border: 0;
+            border-top: 1px solid var(--border-subtle);
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        /* Import Zone */
+        .drop-zone {
+            border: 1px dashed var(--border-subtle);
+            background: var(--bg-app);
+            border-radius: var(--radius);
+            padding: 25px 15px;
+            text-align: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .status-card {
+            background: #064e3b;
+            border: 1px solid #059669;
+            border-radius: var(--radius);
+            padding: 10px;
+            display: none;
+            margin-top: 10px;
+        }
+
+        /* Grid Settings */
+        .grid-settings {
+            background: var(--bg-panel);
+            padding: 12px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .grid-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .grid-col {
+            flex: 1;
+        }
+
+        /* Actions Footer */
+        .sidebar-footer {
+            padding: 15px 24px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--bg-sidebar);
+        }
+
+        button.action-btn {
+            padding: 10px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.1s;
+        }
+        
+        button.action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-print {
+            background: var(--text-main);
+            color: var(--bg-app);
+        }
+        
+        .btn-print:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .btn-download {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .btn-download:hover:not(:disabled) {
+            background: var(--bg-panel);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            font-size: 0.8rem;
+        }
+
+        /* --- MAIN PREVIEW (DROITE) --- */
+        .main-content {
+            flex: 1;
+            background: #020617;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toolbar-preview {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 50;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .preview-scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            display: flex;
+            flex-direction: column; 
+            justify-content: flex-start;
+            align-items: center;
+            padding: 60px 40px;
+            box-sizing: border-box;
+        }
+
+        .sheet-transform-layer {
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Espacement entre les pages dans l'aperçu */
+        .sheet + .sheet {
+            margin-top: 40px;
+        }
+
+
+        /* FEUILLE */
+        .sheet {
+            background: white;
+            color: black;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 210mm;
+            height: 297mm;
+            /* A4 Portrait Default */
+
+            /* Variables CSS Grille */
+            --mt: 4.5mm;
+            --ml: 5mm;
+            --cols: 3;
+            --rows: 8;
+            --lh: 36mm;
+
+            padding-top: var(--mt);
+            padding-left: var(--ml);
+            padding-right: var(--ml);
+        }
+
+        /* Grille CSS */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(var(--cols), 1fr);
+            grid-template-rows: repeat(var(--rows), var(--lh));
+            width: 100%;
+            height: auto;
+            justify-content: start;
+            align-content: start;
+        }
+
+        .barcode-cell {
+            width: 100%;
+            height: 100%;
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            /* Guides visuels */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 2px;
+        }
+
+        /* Impression */
+        @media print {
+
+            @page {
+                margin: 0;
+            }
+
+            .sidebar,
+            .toolbar-preview {
+                display: none !important;
+            }
+
+            .main-content,
+            .preview-scroll-wrapper {
+                display: block !important;
+                position: static !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+            
+            .sheet-transform-layer {
+                display: block !important; 
+                transform: none !important;
+                box-shadow: none !important;
+            }
+
+            .sheet {
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always; /* Force une nouvelle page pour chaque feuille */
+            }
+            
+            .sheet:last-child {
+                 page-break-after: avoid; /* Évite un saut de page inutile à la fin */
+            }
+
+            .barcode-cell {
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="app-title">Gestion Étiquettes</div>
+        </div>
+
+        <div class="sidebar-content">
+
+            <div class="tabs-nav">
+                <a href="https://mikefri.github.io/GenCodeBarre" class="tab-btn" id="btn-tab-tools">Éditeur</a>
+                <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Données</button>
+            </div>
+
+
+            <div class="control-group">
+                <label>1. Source de Données (Excel)</label>
+                <label class="drop-zone" id="dropZone">
+                    <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
+                    <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
+                    <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
+                </label>
+
+                <div id="importStatus" class="status-card">
+                    <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
+                    <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
+                </div>
+
+                <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer les données</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="control-group">
+                <label>2. Type de Code</label>
+                <select id="codeType">
+                    <option value="CODE128">Code 128</option>
+                    <option value="EAN13">EAN-13</option>
+                    <option value="QRCODE">QR Code</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>3. Configuration Grille</label>
+
+                <select id="gridPresetSelect" style="margin-bottom: 10px;">
+                    <option value="" selected disabled>Sélectionner un Modèle prédéfini...</option>
+                </select>
+                <div class="grid-settings">
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <label>Marge Haut (mm)</label>
+                            <input type="number" id="marginTop" value="4.5" step="0.5">
+                        </div>
+                        <div class="grid-col">
+                            <label>Marge G (mm)</label>
+                            <input type="number" id="marginLeft" value="5" step="0.5">
+                        </div>
+                    </div>
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <label>Colonnes</label>
+                            <input type="number" id="nbCols" value="3">
+                        </div>
+                        <div class="grid-col">
+                            <label>Lignes</label>
+                            <input type="number" id="nbRows" value="8">
+                        </div>
+                    </div>
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <label>H. Étiquette (mm)</label>
+                            <input type="number" id="rowHeight" value="36">
+                        </div>
+                        <div class="grid-col">
+                            <label>Échelle Code</label>
+                            <input type="number" id="codeScale" value="1" step="0.1" min="0.5" max="3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="action-btn btn-print" onclick="window.print()">Imprimer toutes les pages</button>
+            <button class="action-btn btn-download" id="downloadBtn">Télécharger le PDF</button> 
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="toolbar-preview">
+            <span>Zoom Aperçu</span>
+            <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.1" value="0.7">
+        </div>
+
+        <div class="preview-scroll-wrapper">
+            <div class="sheet-transform-layer" id="sheetLayer" style="transform: scale(0.7);">
+                <div id="pageSheet" class="sheet">
+                    <div id="gridContainer" class="grid-container">
+                        <div class="barcode-cell" style="color:#aaa; font-size:0.8rem;">
+                            (Zone d'aperçu - Importez un fichier)
+                        </div>
+                    </div>
+                </div>
+                </div>
+        </div>
+    </main>
+
+    <script>
+        const refs = {
+            excelInput: document.getElementById('excelInput'),
+            dropZone: document.getElementById('dropZone'),
+            importStatus: document.getElementById('importStatus'),
+            importCount: document.getElementById('importCount'),
+            clearBtn: document.getElementById('clearDataBtn'),
+            downloadBtn: document.getElementById('downloadBtn'),
+
+            gridContainer: document.getElementById('gridContainer'),
+            pageSheet: document.getElementById('pageSheet'),
+            sheetLayer: document.getElementById('sheetLayer'),
+            zoomSlider: document.getElementById('zoomSlider'),
+
+            // Inputs Config
+            codeType: document.getElementById('codeType'),
+            marginTop: document.getElementById('marginTop'),
+            marginLeft: document.getElementById('marginLeft'),
+            nbCols: document.getElementById('nbCols'),
+            nbRows: document.getElementById('nbRows'),
+            rowHeight: document.getElementById('rowHeight'),
+            codeScale: document.getElementById('codeScale'),
+
+            // NOUVELLE RÉFÉRENCE
+            gridPresetSelect: document.getElementById('gridPresetSelect')
+        };
+
+        let appData = []; // Stockage des codes
+
+        // --- DÉFINITION DES PRESETS DE GRILLE ---
+        const gridPresets = [
+            {
+                name: "Planche de 24 (Avery 3x8)",
+                marginTop: 4.5,
+                marginLeft: 5,
+                nbCols: 3,
+                nbRows: 8,
+                rowHeight: 36, // Hauteur en mm (pour A4 297mm)
+            },
+            {
+                name: "Grandes Étiquettes (2x4)",
+                marginTop: 10,
+                marginLeft: 10,
+                nbCols: 2,
+                nbRows: 4,
+                rowHeight: 65,
+            },
+            {
+                name: "Petites Étiquettes (4x10)",
+                marginTop: 5,
+                marginLeft: 5,
+                nbCols: 4,
+                nbRows: 10,
+                rowHeight: 25,
+            },
+            {
+                name: "Très Grandes (2x2)",
+                marginTop: 15,
+                marginLeft: 15,
+                nbCols: 2,
+                nbRows: 2,
+                rowHeight: 120,
+            }
+        ];
+        // --- FIN PRESETS ---
+
+
+        // --- GESTION DU ZOOM ---
+        refs.zoomSlider.addEventListener('input', (e) => {
+            refs.sheetLayer.style.transform = `scale(${e.target.value})`;
+        });
+
+
+        // --- MISE A JOUR CSS GRILLE ---
+        function updateSheetCSS(sheetElement) {
+            const style = sheetElement.style;
+            
+            style.setProperty('--mt', refs.marginTop.value + 'mm');
+            style.setProperty('--ml', refs.marginLeft.value + 'mm');
+            style.setProperty('--cols', refs.nbCols.value);
+            style.setProperty('--rows', refs.nbRows.value);
+            style.setProperty('--lh', refs.rowHeight.value + 'mm');
+        }
+        
+        function updateGridCSS() {
+             // Applique le style à la première page
+            updateSheetCSS(refs.pageSheet); 
+        }
+
+
+        // Listeners sur tous les inputs de config
+        [refs.marginTop, refs.marginLeft, refs.nbCols, refs.nbRows, refs.rowHeight, refs.codeScale, refs.codeType]
+            .forEach(el => el.addEventListener('input', () => {
+                // Réinitialiser le sélecteur de preset si l'utilisateur modifie manuellement
+                refs.gridPresetSelect.value = "";
+                updateGridCSS();
+                renderBarcodes();
+            }));
+
+        // --- GESTION DES PRESETS SELECTIONNÉS ---
+        function populatePresets() {
+            gridPresets.forEach((preset, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = preset.name;
+                refs.gridPresetSelect.appendChild(option);
+            });
+        }
+
+        refs.gridPresetSelect.addEventListener('change', (e) => {
+            const selectedIndex = e.target.value;
+
+            if (selectedIndex === "" || selectedIndex === null) {
+                return;
+            }
+
+            const preset = gridPresets[selectedIndex];
+
+            // 1. Appliquer les valeurs aux champs de configuration
+            refs.marginTop.value = preset.marginTop;
+            refs.marginLeft.value = preset.marginLeft;
+            refs.nbCols.value = preset.nbCols;
+            refs.nbRows.value = preset.nbRows;
+            refs.rowHeight.value = preset.rowHeight;
+            // On ne touche pas à codeScale
+
+            // 2. Mettre à jour la grille visuelle
+            updateGridCSS();
+            renderBarcodes();
+        });
+        // --- FIN PRESETS LOGIQUE ---
+
+
+        // --- RENDU DES CODES (Multi-Pages) ---
+        function renderBarcodes() {
+            // Supprimer toutes les pages supplémentaires sauf la première (qui est réutilisée)
+            const sheetsToRemove = refs.sheetLayer.querySelectorAll('.sheet:not(#pageSheet)');
+            sheetsToRemove.forEach(sheet => sheet.remove());
+
+            const scale = parseFloat(refs.codeScale.value);
+            const cols = parseInt(refs.nbCols.value);
+            const rows = parseInt(refs.nbRows.value);
+            const labelsPerPage = cols * rows;
+
+            let dataToUse = appData.length === 0 
+                ? ["EXEMPLE-1", "EXEMPLE-2", "EXEMPLE-3", "EXEMPLE-4", "EXEMPLE-5", "EXEMPLE-6", "EXEMPLE-7", "EXEMPLE-8"] 
+                : appData;
+                
+            const isDemo = appData.length === 0;
+
+            if (dataToUse.length === 0) {
+                 // Si pas de données et pas en mode démo, restaurer le message initial
+                 refs.pageSheet.innerHTML = '<div id="gridContainer" class="grid-container"><div class="barcode-cell" style="color:#aaa; font-size:0.8rem;">(Zone d\'aperçu - Importez un fichier)</div></div>';
+                 refs.gridContainer = document.getElementById('gridContainer');
+                 return;
+            }
+
+            const totalPages = Math.ceil(dataToUse.length / labelsPerPage);
+            
+            const fragment = document.createDocumentFragment();
+
+            for (let p = 0; p < totalPages; p++) {
+                const pageStart = p * labelsPerPage;
+                const pageEnd = pageStart + labelsPerPage;
+                const pageData = dataToUse.slice(pageStart, pageEnd);
+
+                let currentSheet;
+                let pageGridContainer;
+
+                if (p === 0) {
+                    // Utiliser la première page et la première grille existantes
+                    currentSheet = refs.pageSheet;
+                    currentSheet.innerHTML = ''; 
+                    
+                    pageGridContainer = document.createElement('div');
+                    pageGridContainer.className = 'grid-container';
+                    pageGridContainer.id = 'gridContainer'; 
+                    currentSheet.appendChild(pageGridContainer);
+                    refs.gridContainer = pageGridContainer; 
+                } else {
+                    // Créer une nouvelle feuille et une nouvelle grille
+                    currentSheet = document.createElement('div');
+                    currentSheet.className = 'sheet';
+                    updateSheetCSS(currentSheet); 
+                    
+                    pageGridContainer = document.createElement('div');
+                    pageGridContainer.className = 'grid-container';
+                    currentSheet.appendChild(pageGridContainer);
+                    fragment.appendChild(currentSheet);
+                }
+                
+                // Remplir la grille
+                pageData.forEach(code => {
+                    createCell(code, scale, pageGridContainer, isDemo);
+                });
+            }
+            
+            // Ajouter les nouvelles pages au conteneur principal
+            refs.sheetLayer.appendChild(fragment);
+            
+             // Mise à jour du statut après rendu pour afficher le bon nombre de pages
+            if (appData.length > 0) {
+                 refs.importCount.textContent = `${appData.length} codes chargés, répartis sur ${totalPages} planches.`;
+            }
+        }
+
+        // --- Création d'une cellule (Code-barres ou QR Code) ---
+        function createCell(text, scale, containerElement, isDemo = false) {
+            const cell = document.createElement('div');
+            cell.className = 'barcode-cell';
+            if (isDemo) cell.style.opacity = "0.3";
+
+            try {
+                const type = refs.codeType.value;
+                let element;
+
+                if (type === 'QRCODE') {
+                    element = document.createElement('canvas');
+                    QRCode.toCanvas(element, String(text), {
+                        margin: 0,
+                        width: 100 * scale
+                    });
+                } else {
+                    element = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    // Correction EAN13 check digit
+                    let codeText = String(text);
+                    if (type === 'EAN13') {
+                        codeText = codeText.replace(/\D/g, "");
+                        if (codeText.length === 12) codeText += calculCheckDigit(codeText);
+                    }
+
+                    JsBarcode(element, codeText, {
+                        format: type,
+                        lineColor: "#000",
+                        width: 2 * scale,
+                        height: 50 * scale,
+                        displayValue: true,
+                        margin: 5
+                    });
+                }
+                cell.appendChild(element);
+            } catch (e) {
+                cell.textContent = `Erreur: ${e.message.substring(0, 30)}...`;
+                cell.style.color = "red";
+                cell.style.fontSize = "0.7rem";
+            }
+
+            containerElement.appendChild(cell);
+        }
+
+        function calculCheckDigit(ean12) {
+            let sum = 0;
+            for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
+            const rem = sum % 10;
+            return rem === 0 ? 0 : 10 - rem;
+        }
+
+        // --- IMPORT EXCEL ---
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = e.target.result;
+                const workbook = XLSX.read(data, {
+                    type: 'binary'
+                });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet, {
+                    header: 1
+                });
+
+                // Filtre colonne A
+                appData = json.map(r => r[0]).filter(c => c !== undefined && c !== "");
+
+                // UI Update
+                refs.importStatus.style.display = 'block';
+                refs.clearBtn.style.display = 'inline-flex';
+
+                renderBarcodes();
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        refs.excelInput.addEventListener('change', handleFile);
+
+        // Drop Zone handling
+        refs.dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            refs.dropZone.style.borderColor = 'var(--primary)';
+        });
+
+        refs.dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            refs.dropZone.style.borderColor = 'var(--border-subtle)';
+        });
+
+        refs.dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            refs.dropZone.style.borderColor = 'var(--border-subtle)';
+            if (e.dataTransfer.files.length) {
+                refs.excelInput.files = e.dataTransfer.files;
+                handleFile({ target: refs.excelInput });
+            }
+        });
+
+        // Clear
+        refs.clearBtn.addEventListener('click', () => {
+            appData = [];
+            refs.importStatus.style.display = 'none';
+            refs.clearBtn.style.display = 'none';
+            refs.excelInput.value = "";
+            renderBarcodes();
+        });
+
+        // --- Download PDF (Multi-Pages) ---
+        refs.downloadBtn.addEventListener('click', async () => {
+            // Désactiver le bouton pendant le traitement pour éviter les clics multiples
+            refs.downloadBtn.textContent = 'Génération en cours...';
+            refs.downloadBtn.disabled = true;
+
+            // 1. Mise en place de l'environnement de capture
+            const originalTransform = refs.sheetLayer.style.transform;
+            const originalBoxShadow = refs.sheetLayer.style.boxShadow;
+            
+            // Réinitialiser le zoom/ombre pour la capture
+            refs.sheetLayer.style.transform = "scale(1)"; 
+            refs.sheetLayer.style.boxShadow = "none";
+            
+            // Récupérer toutes les planches affichées
+            const sheets = refs.sheetLayer.querySelectorAll('.sheet');
+            if (sheets.length === 0) {
+                alert("Aucune planche à télécharger.");
+                refs.downloadBtn.textContent = 'Télécharger le PDF';
+                refs.downloadBtn.disabled = false;
+                return;
+            }
+            
+            // 2. Initialisation de jsPDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4'); 
+
+            // Paramètres A4 en mm pour le PDF
+            const pdfWidth = 210;
+            const pdfHeight = 297;
+
+            let firstPage = true;
+
+            for (const sheet of sheets) {
+                if (!firstPage) {
+                    // Ajouter une nouvelle page au PDF pour toutes les feuilles après la première
+                    pdf.addPage();
+                }
+
+                // 3. Capturer la feuille avec html2canvas
+                const canvas = await html2canvas(sheet, {
+                    scale: 3, // Haute résolution
+                    useCORS: true, 
+                    logging: false,
+                });
+
+                // 4. Ajouter la capture au PDF
+                const imgData = canvas.toDataURL('image/png');
+                
+                // Le format A4 de l'image correspond exactement au format A4 du PDF (0,0, L, H)
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+                firstPage = false;
+            }
+
+            // 5. Téléchargement du fichier
+            pdf.save('planche_etiquettes_multi-pages.pdf');
+
+            // 6. Restauration de l'affichage et du bouton
+            refs.sheetLayer.style.transform = originalTransform;
+            refs.sheetLayer.style.boxShadow = originalBoxShadow;
+            refs.downloadBtn.textContent = 'Télécharger le PDF';
+            refs.downloadBtn.disabled = false;
+        });
+
+        // Init
+        populatePresets();
+        updateGridCSS();
+        renderBarcodes(); // Affiche l'exemple au démarrage
+
+    </script>
+</body>
+
+</html>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
