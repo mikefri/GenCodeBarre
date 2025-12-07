@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GenCodeBarres PWA</title>
+  <meta name="theme-color" content="#0f172a">
+  
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* ... Votre CSS existant (non modifié) ... */
+    :root { 
+      /* Palette Pro SaaS (Slate) */
+      --bg-app: #0f172a;       /* Fond principal très sombre */
+      --bg-sidebar: #1e293b;   /* Sidebar légèrement plus claire */
+      --bg-panel: #334155;     /* Fond des inputs */
+      
+      --border-subtle: #334155;
+      --border-focus: #3b82f6;
+
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      
+      --primary: #3b82f6;      /* Bleu standard professionnel */
+      --primary-hover: #2563eb;
+      
+      --success: #10b981;
+      --danger: #ef4444;
+
+      --radius: 6px; 
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main); 
+      margin: 0; padding: 0; 
+      height: 100vh; 
+      display: flex; 
+      overflow: hidden; 
+    }
+
+    /* --- SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-app); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-panel); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+      width: 320px; 
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      padding: 0; 
+      display: flex; flex-direction: column;
+      z-index: 10; 
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-sidebar);
+      position: sticky; top: 0; z-index: 20;
+    }
+
+    .app-title {
+      margin: 0; 
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .sidebar-content {
+      padding: 24px;
+      display: flex; flex-direction: column; gap: 24px;
+      flex: 1; 
+    }
+
+    /* --- SIDEBAR FOOTER --- */
+    .sidebar-footer {
+      padding: 15px 24px;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-sidebar);
+      margin-top: auto; 
+    }
+
+    /* --- ONGLETS --- */
+    .tabs-nav {
+      display: flex;
+      background: #0f172a;
+      padding: 3px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-subtle);
+    }
+    .tab-btn {
+      flex: 1; 
+      padding: 8px; 
+      background: transparent; 
+      border: none;
+      color: var(--text-secondary); 
+      cursor: pointer; 
+      font-weight: 500;
+      font-size: 0.85rem;
+      border-radius: 4px; 
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover { color: #fff; }
+    .tab-btn.active { 
+      background: var(--bg-panel);
+      color: #fff; 
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .tab-content { display: none; flex-direction: column; gap: 20px; height: 100%; }
+    .tab-content.active { display: flex; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- FORMULAIRES --- */
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    
+    .range-header { display: flex; justify-content: space-between; align-items: center; }
+    .range-header label, .control-group label { 
+      font-weight: 500; font-size: 0.8rem; color: var(--text-secondary); 
+    }
+    .range-value { 
+      font-size: 0.75rem; color: var(--text-main); font-family: monospace; 
+      background: var(--bg-app); padding: 2px 6px; border-radius: 3px; border: 1px solid var(--border-subtle);
+    }
+
+    /* Inputs Pro */
+    input[type="text"], select { 
+      padding: 10px 12px; 
+      border-radius: var(--radius); 
+      border: 1px solid var(--border-subtle); 
+      background: var(--bg-app); 
+      color: #fff; 
+      outline: none; 
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    /* Sliders */
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; margin: 8px 0;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      width: 100%; height: 4px; background: var(--bg-panel); border-radius: 2px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+      background: var(--primary); margin-top: -6px; border: 2px solid var(--bg-sidebar);
+      transition: transform 0.1s;
+    }
+    
+    /* Checkbox & Radio */
+    .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.85rem; user-select: none; color: var(--text-main); }
+    .checkbox-wrapper input { accent-color: var(--primary); width: 16px; height: 16px; margin: 0; }
+    
+    .radio-group { display: flex; gap: 1px; background: var(--border-subtle); padding: 1px; border-radius: var(--radius); overflow: hidden; }
+    .radio-option { flex: 1; position: relative; background: var(--bg-sidebar); }
+    .radio-option input { position: absolute; opacity: 0; cursor: pointer; height: 100%; width: 100%; z-index: 2; margin: 0; }
+    .radio-option span { 
+      display: block; text-align: center; padding: 8px; 
+      font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: var(--text-secondary);
+    }
+    .radio-option input:checked + span { background: var(--primary); color: #fff; }
+
+    .divider { border: 0; border-top: 1px solid var(--border-subtle); width: 100%; margin: 5px 0; }
+
+    /* --- BOUTONS --- */
+    .actions { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
+    button.action-btn { 
+      padding: 10px; border-radius: var(--radius); border: 1px solid transparent; 
+      font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: all 0.15s;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+    
+    .btn-print { background: var(--text-main); color: var(--bg-app); border: 1px solid var(--text-main); }
+    .btn-print:hover { background: #e2e8f0; }
+
+    .btn-download { background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle); }
+    .btn-download:hover { border-color: var(--text-secondary); background: var(--bg-panel); }
+
+    /* Utils btns */
+    #regenerateBatchBtn { background: var(--primary); color: white; }
+    #regenerateBatchBtn:hover { background: var(--primary-hover); }
+    
+    #clearDataBtn { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: transparent; }
+    #clearDataBtn:hover { background: rgba(239, 68, 68, 0.2); }
+
+    /* --- IMPORT EXCEL --- */
+    .drop-zone {
+      border: 1px dashed var(--border-subtle);
+      background: var(--bg-app);
+      border-radius: var(--radius);
+      padding: 30px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .drop-zone:hover { border-color: var(--primary); color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+    
+    .status-card {
+        background: #064e3b; 
+        border: 1px solid #059669;
+        border-radius: var(--radius);
+        padding: 12px;
+        margin-top: 10px;
+        display: none; 
+    }
+
+    /* --- PREVIEW ZONE --- */
+    .main-content {
+      flex: 1; 
+      background: #020617; 
+      background-image: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 20px 20px;
+      display: flex; flex-direction: column; 
+      position: relative;
+      overflow: hidden; /* Important pour le scroll interne */
+    }
+
+    .toolbar-preview {
+      position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+      padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-subtle);
+      display: flex; align-items: center; gap: 15px; z-index: 50;
+      color: white; font-size: 0.8rem;
+    }
+    
+    /* Scroll wrapper pour centrer la feuille scalée */
+    .preview-scroll-wrapper {
+      width: 100%; height: 100%;
+      overflow: auto;
+      display: flex; justify-content: center; align-items: flex-start;
+      padding: 80px 40px; /* Padding pour ne pas coller aux bords */
+      box-sizing: border-box;
+    }
+    
+    .sheet-transform-layer {
+      transform-origin: top center;
+      transition: transform 0.2s ease-out;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .sheet {
+      background: white; color: black;
+      display: flex; flex-direction: column; 
+      /* Alignement FIXE pour éviter que le centrage ne bouge quand on ajoute du contenu */
+      align-items: center; justify-content: flex-start; 
+      position: relative; 
+      box-sizing: border-box;
+      padding: 10mm; /* Marge interne standard */
+      
+      /* DIMENSIONS FIXES STRICTES (Blockage) */
+      overflow: hidden;
+    }
+    
+    #canvas-target { 
+      display: flex; justify-content: center; align-items: center; width: 100%; flex: 1; 
+      /* On s'assure que le contenu peut scroller si besoin à l'intérieur mais pas casser la page */
+    }
+    #canvas-target.grid-mode { flex-wrap: wrap; align-content: flex-start; gap: 15px; }
+    .barcode-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
+    
+    #title-display { 
+      font-family: 'Arial', sans-serif; font-weight: bold; text-align: center; 
+      width: 100%; word-wrap: break-word; color: #000;
+      margin-bottom: 20px; /* Espace stable sous le titre */
+      line-height: 1.2;
+    }
+    
+    /* Dimensions Papier Strictes */
+    /* On utilise HEIGHT et pas MIN-HEIGHT pour bloquer le format */
+    .sheet.a4.portrait  { width: 210mm; height: 297mm; } 
+    .sheet.a4.landscape { width: 297mm; height: 210mm; }
+    .sheet.a3.portrait  { width: 297mm; height: 420mm; }
+    .sheet.a3.landscape { width: 420mm; height: 297mm; }
+    
+    #barcode-wrapper { width: 100%; display: flex; justify-content: center; height: 100%; }
+
+    /* --- IMPRESSION (CORRECTIF MAJEUR) --- */
+    @media print {
+      /* Force l'imprimante à ne pas mettre de marge (le CSS gère tout) */
+      @page { margin: 0; }
+      
+      body { 
+          background: white; 
+          height: auto; 
+          overflow: visible;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+      }
+      
+      .sidebar, .toolbar-preview, .sidebar-footer { display: none !important; }
+      
+      /* Reset total des conteneurs de layout */
+      .main-content, .preview-scroll-wrapper, .sheet-transform-layer { 
+        position: static !important; 
+        width: auto !important; 
+        height: auto !important; 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        background: transparent !important; 
+        display: block !important; 
+        overflow: visible !important;
+        transform: none !important; /* CRUCIAL: Annule le zoom écran */
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      .sheet { 
+        /* On ne force PAS width:100% ici, on garde les dimensions mm définies par les classes (.a4, etc)
+           Cela garantit que le layout flexbox interne a exactement le même espace qu'à l'écran. */
+        margin: 0 !important; 
+        page-break-after: always; 
+        box-shadow: none !important; 
+        border: none !important;
+        overflow: hidden !important; /* On garde le blocage demandé */
+      }
+      
+      /* Sécurité pour le layout grille en impression */
+      #canvas-target.grid-mode { 
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+      }
+      
+      .barcode-item { break-inside: avoid; }
+    }
+#btn-tab-tools {
+    /* 1. On enlève le style "lien" */
+    text-decoration: none !important;
+    color: white !important;
+
+    /* 2. On active le mode "Flexbox" pour pouvoir centrer */
+    display: inline-flex !important; /* Rend le lien capable de gérer l'alignement */
+    
+    /* 3. On centre le texte */
+    justify-content: center; /* Centre horizontalement (gauche/droite) */
+    align-items: center;     /* Centre verticalement (haut/bas) */
+}
+    
+  </style>
+  <style id="print-style"></style>
+</head>
+<body>
+
+  <aside class="sidebar">
+        <div class="sidebar-header">
+      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.3 (A3 Unlock)</span></div>
+    </div>
+    
+    <div class="sidebar-content">
+      <div class="tabs-nav">
+        <button class="tab-btn active" id="btn-tab-gen" data-target="tab-generator">Éditeur</button>
+        <a href="https://mikefri.github.io/GenCodeBarre/plaquettes.html" class="tab-btn" id="btn-tab-tools">Données</a>
+      </div>
+
+            <div id="tab-generator" class="tab-content active">
+        
+        <div class="control-group">
+          <label>Titre de page</label>
+          <input type="text" id="customTitle" placeholder="Ex: Inventaire 2025">
+        </div>
+        <div class="control-group">
+          <div class="range-header">
+            <label>Taille Titre</label>
+            <span id="titleSizeVal" class="range-value">3</span>
+          </div>
+          <input type="range" id="titleSizeSlider" min="1" max="10" step="0.5" value="3">
+        </div>
+        
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <label>Données (Code)</label>
+          <input type="text" id="texte" value="12345678" placeholder="Saisir le code...">
+          </div>
+
+        <div class="control-group">
+          <label>Format</label>
+          <select id="type">
+            <option value="CODE128" selected>Code 128 (Standard)</option>
+            <option value="EAN13">EAN-13 (Produit)</option>
+            <option value="QRCODE">QR Code (Lien)</option>
+          </select>
+        </div>
+
+        <label class="checkbox-wrapper">
+          <input type="checkbox" id="showText" checked>
+          <span>Afficher le texte sous le code</span>
+        </label>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+          <div class="range-header">
+            <label>Configuration Papier</label>
+          </div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="format" value="a4" checked>
+              <span>A4</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="format" value="a3">
+              <span>A3</span>
+            </label>
+            <label class="radio-option" style="border-left: 1px solid var(--border-subtle);">
+              <input type="radio" name="orientation" value="portrait" checked>
+              <span>Portrait</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="orientation" value="landscape">
+              <span>Paysage</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="range-header">
+            <label>Échelle du Code</label>
+            <span id="codeSizeVal" class="range-value">1</span>
+          </div>
+                    <input type="range" id="sizeSlider" min="0.5" max="15" step="0.1" value="1">
+        </div>
+
+        <div class="actions">
+          <button class="action-btn btn-print" id="printBtn">
+            Imprimer la page
+          </button>
+          <button class="action-btn btn-download" id="downloadBtn">
+            Sauvegarder en PNG
+          </button>
+        </div>
+      </div>
+
+            <div id="tab-tools" class="tab-content">
+        <div class="control-group">
+          <label>Import Excel de masse</label>
+          <label class="drop-zone" id="dropZone">
+            <div style="font-size: 1.5rem; margin-bottom: 10px;">📂</div>
+            <div style="font-weight: 500;">Sélectionner un fichier .xlsx</div>
+            <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 5px;">Colonne A uniquement</div>
+            <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
+          </label>
+        </div>
+
+                <div id="importStatus" class="status-card">
+          <div style="color: #fff; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem;">
+              Import terminé
+          </div>
+          <div id="importCount" style="color: #a7f3d0; font-size: 0.85rem;"></div>
+        </div>
+
+        <div class="actions" style="margin-top: auto;">
+           <button class="action-btn" id="regenerateBatchBtn" style="display:none;">
+             Voir la planche générée
+           </button>
+           <button class="action-btn" id="clearDataBtn" style="display:none;">
+             Effacer les données
+           </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sidebar-footer">
+      <span>Créé par Micfri</span>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    
+        <div class="toolbar-preview">
+      <span>Zoom Aperçu</span>
+      <input type="range" id="previewZoomSlider" min="0.3" max="1.5" step="0.05" value="0.65" style="width: 100px;">
+      <span id="previewZoomVal" style="width: 40px; text-align:right;">65%</span>
+    </div>
+    
+    <div class="preview-scroll-wrapper">
+      <div class="sheet-transform-layer" id="sheetLayer">
+        <div id="pageSheet" class="sheet a4 portrait">
+          <div id="title-display"></div>
+          <div id="barcode-wrapper">
+            <div id="canvas-target"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const refs = {
+      texte: document.getElementById("texte"),
+      type: document.getElementById("type"),
+      showText: document.getElementById("showText"),
+      
+      slider: document.getElementById("sizeSlider"),
+      sliderVal: document.getElementById("codeSizeVal"),
+      
+      target: document.getElementById("canvas-target"),
+      pageSheet: document.getElementById("pageSheet"),
+      sheetLayer: document.getElementById("sheetLayer"),
+      printStyle: document.getElementById("print-style"),
+      printBtn: document.getElementById("printBtn"),
+      downloadBtn: document.getElementById("downloadBtn"),
+      formatInputs: document.querySelectorAll('input[name="format"]'),
+      orientationInputs: document.querySelectorAll('input[name="orientation"]'),
+      
+      titleInput: document.getElementById("customTitle"),
+      titleSizeSlider: document.getElementById("titleSizeSlider"),
+      titleSizeVal: document.getElementById("titleSizeVal"),
+      titleDisplay: document.getElementById("title-display"),
+      
+      // Nouveau Zoom
+      previewZoomSlider: document.getElementById("previewZoomSlider"),
+      previewZoomVal: document.getElementById("previewZoomVal"),
+      
+      tabs: document.querySelectorAll('.tab-btn'),
+      tabContents: document.querySelectorAll('.tab-content'),
+
+      excelInput: document.getElementById("excelInput"),
+      dropZone: document.getElementById("dropZone"),
+      importStatus: document.getElementById("importStatus"),
+      importCount: document.getElementById("importCount"),
+      clearDataBtn: document.getElementById("clearDataBtn"),
+      regenerateBatchBtn: document.getElementById("regenerateBatchBtn"),
+      btnTabGen: document.getElementById("btn-tab-gen")
+    };
+
+    // --- VARIABLES D'ÉTAT ---
+    let appState = {
+        mode: 'single', // 'single' ou 'batch'
+        batchData: []   // Stocke les codes importés
+    };
+
+    // --- GESTION DU ZOOM APERÇU ---
+    refs.previewZoomSlider.addEventListener("input", (e) => {
+      const val = e.target.value;
+      refs.sheetLayer.style.transform = `scale(${val})`;
+      refs.previewZoomVal.textContent = Math.round(val * 100) + "%";
+    });
+
+    // --- GESTION DES ONGLETS ---
+    function switchTab(targetId) {
+      refs.tabs.forEach(t => {
+        if(t.getAttribute('data-target') === targetId) t.classList.add('active');
+        else t.classList.remove('active');
+      });
+      refs.tabContents.forEach(c => {
+        if(c.id === targetId) c.classList.add('active');
+        else c.classList.remove('active');
+      });
+    }
+    refs.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.getAttribute('data-target'))));
+
+    // --- FONCTIONS GENERATEUR ---
+    function updateTitle() {
+      refs.titleDisplay.textContent = refs.titleInput.value;
+      refs.titleDisplay.style.fontSize = refs.titleSizeSlider.value + 'em';
+      refs.titleSizeVal.textContent = refs.titleSizeSlider.value;
+    }
+
+    function updatePageConfig() {
+      const format = document.querySelector('input[name="format"]:checked').value;
+      const orientation = document.querySelector('input[name="orientation"]:checked').value;
+      refs.pageSheet.className = `sheet ${format} ${orientation}`;
+      // On ajoute margin:0 dans la regle @page pour l'impression
+      refs.printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
+    }
+
+    function generer() {
+        const scale = parseFloat(refs.slider.value);
+        refs.sliderVal.textContent = scale;
+        refs.target.innerHTML = "";
+
+        if (appState.mode === 'batch' && appState.batchData.length > 0) {
+            refs.target.classList.add('grid-mode');
+            appState.batchData.forEach(code => {
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "barcode-item";
+                const container = createBarcodeElement(code, scale);
+                if (container) itemDiv.appendChild(container);
+                refs.target.appendChild(itemDiv);
+            });
+        } else {
+            refs.target.classList.remove('grid-mode');
+            const texte = refs.texte.value.trim();
+            if (!texte && refs.type.value !== "QRCODE") return;
+            const element = createBarcodeElement(texte, scale);
+            if (element) refs.target.appendChild(element);
+        }
+    }
+
+    function createBarcodeElement(text, scale) {
+        const type = refs.type.value;
+        const displayValue = refs.showText.checked;
+        try {
+            if (type === "CODE128") {
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                JsBarcode(svg, text, {
+                    format: "CODE128", lineColor: "#000", background: "#ffffff",
+                    displayValue: displayValue, fontSize: 20 * scale, height: 100 * scale,
+                    width: 2 * scale, margin: 10 * scale
+                });
+                return svg;
+            } else if (type === "EAN13") {
+                let num = text.replace(/\D/g, "");
+                if (num.length === 12) num += calculCheckDigit(num);
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                JsBarcode(svg, num, {
+                    format: "EAN13", lineColor: "#000", background: "#ffffff",
+                    displayValue: displayValue, fontSize: 24 * scale, height: 100 * scale,
+                    width: 2 * scale, margin: 10 * scale
+                });
+                return svg;
+            } else if (type === "QRCODE") {
+                const canvas = document.createElement("canvas");
+                const qrWidth = Math.floor(300 * scale);
+                QRCode.toCanvas(canvas, text || "https://exemple.com", {
+                    width: qrWidth, margin: 1, color: { dark: "#000000", light: "#ffffff" }
+                }, function (error) { if (error) console.error(error); });
+                return canvas;
+            }
+        } catch (e) {
+            const errDiv = document.createElement("div");
+            errDiv.style.color = "red"; errDiv.style.fontSize = "10px"; errDiv.innerText = "Err.";
+            return errDiv;
+        }
+        return null;
+    }
+
+    function calculCheckDigit(ean12) {
+      let sum = 0;
+      for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
+      const rem = sum % 10;
+      return rem === 0 ? 0 : 10 - rem;
+    }
+
+    // --- IMPORT EXCEL ---
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        let codes = json.map(row => row[0]).filter(cell => cell !== undefined && cell !== null && cell !== "");
+        
+        appState.batchData = codes;
+        appState.mode = 'batch'; 
+        updateImportStatus(codes.length);
+        switchTab('tab-generator');
+        generer();
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    function updateImportStatus(count) {
+        if(count > 0) {
+            refs.importStatus.style.display = 'block';
+            refs.importCount.textContent = `${count} codes importés avec succès.`;
+            refs.regenerateBatchBtn.style.display = 'flex';
+            refs.clearDataBtn.style.display = 'flex';
+        } else {
+            resetImportUI();
+        }
+    }
+
+    function resetImportUI() {
+        refs.importStatus.style.display = 'none';
+        refs.regenerateBatchBtn.style.display = 'none';
+        refs.clearDataBtn.style.display = 'none';
+        refs.excelInput.value = "";
+    }
+
+    // --- LISTENERS ---
+    refs.texte.addEventListener("input", () => { appState.mode = 'single'; generer(); });
+    refs.type.addEventListener("change", generer);
+    refs.showText.addEventListener("change", generer);
+    refs.slider.addEventListener("input", generer);
+    refs.titleInput.addEventListener("input", updateTitle);
+    refs.titleSizeSlider.addEventListener("input", updateTitle);
+    refs.formatInputs.forEach(input => input.addEventListener("change", updatePageConfig));
+    refs.orientationInputs.forEach(input => input.addEventListener("change", updatePageConfig));
+    refs.printBtn.addEventListener("click", () => window.print());
+    
+    refs.downloadBtn.addEventListener("click", () => {
+        // Pour html2canvas, on enlève temporairement le scale visuel
+        const originalTransform = refs.sheetLayer.style.transform;
+        refs.sheetLayer.style.transform = "none";
+        
+        // On s'assure de capturer la feuille entière
+        html2canvas(document.getElementById("pageSheet"), { 
+            scale: 2, 
+            backgroundColor: "#ffffff", 
+            logging: false 
+        })
+        .then(canvas => {
+            const a = document.createElement("a");
+            a.download = `etiquette_${Date.now()}.png`;
+            a.href = canvas.toDataURL("image/png");
+            a.click();
+            // On remet le zoom utilisateur
+            refs.sheetLayer.style.transform = originalTransform; 
+        });
+    });
+
+    refs.excelInput.addEventListener("change", handleFile);
+    refs.clearDataBtn.addEventListener("click", () => { appState.batchData = []; appState.mode = 'single'; resetImportUI(); generer(); });
+    refs.regenerateBatchBtn.addEventListener("click", () => {
+        if(appState.batchData.length > 0) { appState.mode = 'batch'; switchTab('tab-generator'); generer(); }
+    });
+
+    // Effet Drag & Drop Visuel
+    const dz = refs.dropZone;
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--primary)'; dz.style.background = 'rgba(59, 130, 246, 0.1)'; });
+    dz.addEventListener('dragleave', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--border-subtle)'; dz.style.background = 'var(--bg-app)'; });
+    dz.addEventListener('drop', (e) => { e.preventDefault(); dz.style.borderColor = 'var(--border-subtle)'; dz.style.background = 'var(--bg-app)'; 
+        if(e.dataTransfer.files.length) { refs.excelInput.files = e.dataTransfer.files; handleFile({target: refs.excelInput}); } 
+    });
+
+    // Initialisation
+    window.addEventListener('load', () => { 
+        updatePageConfig(); 
+        generer(); 
+        updateTitle();
+        // Set zoom initial
+        refs.sheetLayer.style.transform = `scale(0.65)`;
+
+        // 🛠️ AJOUT PWA : Enregistrement du Service Worker
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker enregistré : ', reg.scope))
+            .catch(err => console.error('Erreur lors de l\'enregistrement du Service Worker : ', err));
+        }
+    });
+  </script>
+</body>
+</html>
