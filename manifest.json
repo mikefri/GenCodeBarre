@@ -1,19 +1,19 @@
 {
-  "name": "Générateur Code-Barres Pro",
-  "short_name": "Barcodes",
-  "start_url": "./index.html",
+  "name": "GenCodeBarre PWA",
+  "short_name": "GenCode",
+  "description": "Générateur de codes-barres et QR codes hors ligne.",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#1e1e2e",
-  "theme_color": "#89b4fa",
-  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/images/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "/images/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
