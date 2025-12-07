@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GenCodeBarres v2.3</title>
   <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0f172a">
+
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
   <!-- Polices Modernes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -759,6 +763,31 @@
         // Set zoom initial
         refs.sheetLayer.style.transform = `scale(0.65)`;
     });
+
+
+// Initialisation
+    window.addEventListener('load', () => { 
+        updatePageConfig(); 
+        generer(); 
+        updateTitle();
+        // Set zoom initial
+        refs.sheetLayer.style.transform = `scale(0.65)`;
+    });
+
+    // ******* AJOUTER CE BLOC *******
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker enregistré avec succès :', registration.scope);
+          })
+          .catch(error => {
+            console.error('Échec de l\'enregistrement du Service Worker :', error);
+          });
+      });
+    }
+    // **********************************
+    
   </script>
 </body>
 </html>
