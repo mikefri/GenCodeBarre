@@ -5,8 +5,8 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/images/icon-192x192.png',
-  '/images/icon-512x512.png',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
   
   // Fichiers CSS et JS internes (votre code)
   // Remarque: le CSS est embarqué dans l'HTML, pas besoin de le lister ici
