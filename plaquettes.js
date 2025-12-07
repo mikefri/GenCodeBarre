@@ -1,3 +1,4 @@
+// Références aux éléments du DOM
 const refs = {
     excelInput: document.getElementById('excelInput'),
     dropZone: document.getElementById('dropZone'),
@@ -72,19 +73,21 @@ function createCell(text, scale, isDemo = false) {
 
         if (type === 'QRCODE') {
             element = document.createElement('canvas');
-            QRCode.toCanvas(element, text, { 
+            // Nécessite la librairie 'qrcode.min.js'
+            QRCode.toCanvas(element, String(text), { // Conversion en String pour éviter des erreurs
                 margin: 0, 
                 width: 100 * scale 
             });
         } else {
             element = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             // Correction EAN13 check digit
-            let codeText = text;
+            let codeText = String(text); // Conversion en String
             if(type === 'EAN13') {
-                codeText = text.replace(/\D/g, "");
+                codeText = codeText.replace(/\D/g, "");
                 if(codeText.length === 12) codeText += calculCheckDigit(codeText);
             }
             
+            // Nécessite la librairie 'JsBarcode.all.min.js'
             JsBarcode(element, codeText, {
                 format: type,
                 lineColor: "#000",
@@ -98,16 +101,18 @@ function createCell(text, scale, isDemo = false) {
     } catch(e) {
         cell.textContent = "Erreur";
         cell.style.color = "red";
+        console.error("Erreur de génération de code:", e);
     }
     
     refs.gridContainer.appendChild(cell);
 }
 
+// Calcul de la clé de contrôle EAN-13 (Check Digit)
 function calculCheckDigit(ean12) {
-    let sum = 0;
-    for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
-    const rem = sum % 10;
-    return rem === 0 ? 0 : 10 - rem;
+  let sum = 0;
+  for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
+  const rem = sum % 10;
+  return rem === 0 ? 0 : 10 - rem;
 }
 
 // --- IMPORT EXCEL ---
@@ -118,11 +123,12 @@ function handleFile(e) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = e.target.result;
+        // Nécessite la librairie 'xlsx.full.min.js'
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         
-        // Filtre colonne A
+        // Filtre colonne A (indice 0)
         appData = json.map(r => r[0]).filter(c => c !== undefined && c !== "");
         
         // UI Update
@@ -136,13 +142,13 @@ function handleFile(e) {
 }
 
 refs.excelInput.addEventListener('change', handleFile);
-    
-// Clear
+   
+// Clear Data
 refs.clearBtn.addEventListener('click', () => {
     appData = [];
     refs.importStatus.style.display = 'none';
     refs.clearBtn.style.display = 'none';
-    refs.excelInput.value = "";
+    refs.excelInput.value = ""; // Réinitialise l'input file
     renderBarcodes();
 });
 
@@ -151,6 +157,7 @@ refs.downloadBtn.addEventListener('click', () => {
     const originalTransform = refs.sheetLayer.style.transform;
     refs.sheetLayer.style.transform = "none"; // Reset zoom pour capture
     
+    // Nécessite la librairie 'html2canvas.min.js'
     html2canvas(refs.pageSheet, { scale: 2 }).then(canvas => {
         const a = document.createElement('a');
         a.download = 'planche_etiquettes.png';
@@ -160,6 +167,6 @@ refs.downloadBtn.addEventListener('click', () => {
     });
 });
 
-// Init
+// Initialisation
 updateGridCSS();
 renderBarcodes(); // Affiche l'exemple au démarrage
