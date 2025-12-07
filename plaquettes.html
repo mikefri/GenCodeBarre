@@ -285,9 +285,9 @@
             transform-origin: top center;
             transition: transform 0.2s ease-out;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            /* Ajout important pour le multi-page: doit permettre le flex-direction column */
-            display: flex; 
-            flex-direction: column;
+            /* Ajout important pour le multi-page: doit permettre le flex-direction column */
+            display: flex;
+            flex-direction: column;
         }
 
         /* FEUILLE */
@@ -302,10 +302,10 @@
             /* A4 Portrait Default */
 
             /* Variables CSS Grille - Seront définies par JS */
-            padding-top: var(--mt, 4.5mm); /* Valeurs par défaut pour l'aperçu */
-            padding-left: var(--ml, 5mm);
-            padding-right: var(--ml, 5mm);
-            margin-bottom: 20mm; /* Espace entre les feuilles en mode Aperçu */
+            padding-top: var(--mt, 0.5mm); /* Valeurs par défaut pour l'aperçu */
+            padding-left: var(--ml, 0mm);
+            padding-right: var(--ml, 0mm);
+            margin-bottom: 20mm; /* Espace entre les feuilles en mode Aperçu */
         }
 
         /* Grille CSS */
@@ -382,7 +382,7 @@
         <div class="sidebar-content">
 
             <div class="tabs-nav">
-                <a href="https://mikefri.github.io/GenCodeBarre" class="tab-btn" id="btn-tab-tools">Éditeur</a>
+                <a href="#" class="tab-btn" id="btn-tab-tools">Éditeur</a>
                 <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Données</button>
             </div>
 
@@ -482,7 +482,6 @@
             clearBtn: document.getElementById('clearDataBtn'),
             downloadBtn: document.getElementById('downloadBtn'),
 
-            // gridContainer, pageSheet NE SONT PLUS UTILISÉS COMME RÉFÉRENCES GLOBALES
             sheetLayer: document.getElementById('sheetLayer'),
             zoomSlider: document.getElementById('zoomSlider'),
 
@@ -609,7 +608,9 @@
                 const demoGridContainer = document.createElement('div');
                 demoGridContainer.className = 'grid-container';
 
-                createCell("EXEMPLE", scale, demoGridContainer, true);
+                for (let j = 0; j < maxPerSheet; j++) {
+                    createCell("EXEMPLE", scale, demoGridContainer, true);
+                }
 
                 demoSheet.appendChild(demoGridContainer);
                 refs.sheetLayer.appendChild(demoSheet);
@@ -649,9 +650,9 @@
             cell.className = 'barcode-cell';
             
             if (isDemo) {
+                cell.textContent = `(${String(text)})`;
                 cell.style.opacity = "0.3";
                 cell.style.fontSize = "0.8rem";
-                cell.textContent = "(Zone d'aperçu - Importez un fichier)";
                 targetContainer.appendChild(cell);
                 return;
             }
@@ -763,7 +764,7 @@
         });
 
         // Download PNG
-        // NOTE: Le téléchargement PNG ne capturera que la PREMIÈRE page
+        // NOTE: Le téléchargement PNG ne capturera que la PREMIÈRE page
         refs.downloadBtn.addEventListener('click', () => {
             // Cible la première feuille pour la capture
             const firstSheet = refs.sheetLayer.querySelector('.sheet');
