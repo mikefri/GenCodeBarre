@@ -187,7 +187,7 @@ button.action-btn { 
   position: relative; box-sizing: border-box; overflow: hidden;
   width: 210mm; height: 297mm; /* A4 Portrait Default */
   
-  /* Variables CSS Grille */
+  /* Variables CSS Grille (valeurs initiales définies dans le JS) */
   --mt: 4.5mm; --ml: 5mm; --cols: 3; --rows: 8; --lh: 36mm;
   
   padding-top: var(--mt);
