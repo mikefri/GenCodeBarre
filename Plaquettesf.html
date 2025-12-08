@@ -655,39 +655,34 @@
         // --- FIN PRESETS LOGIQUE ---
 
 
-/ --- CRÉATION DU SVG DE FLÈCHE (NOUVEAU) ---
-function createArrowSVG(direction) {
-    if (direction === 'none') return null;
+        // --- CRÉATION DU SVG DE FLÈCHE (NOUVEAU) ---
+        function createArrowSVG(direction) {
+            if (direction === 'none') return null;
 
-    // Dimensions : environ 10mm de large, 20mm de haut
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", "10mm");
-    svg.setAttribute("height", "20mm");
-    svg.setAttribute("viewBox", "0 0 100 200");
-    svg.style.marginRight = "5px"; // Petit espacement entre la flèche et le code
-    svg.style.flexShrink = "0"; // Pour éviter que la flèche ne soit compressée
+            // Dimensions : environ 10mm de large, 20mm de haut
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", "10mm");
+            svg.setAttribute("height", "20mm");
+            svg.setAttribute("viewBox", "0 0 100 200");
+            svg.style.marginRight = "5px"; // Petit espacement entre la flèche et le code
+            svg.style.flexShrink = "0"; // Pour éviter que la flèche ne soit compressée
 
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    
-    // 🔥 C'est la ligne la plus importante pour le remplissage noir 🔥
-    path.setAttribute("fill", "#000"); 
-    path.setAttribute("stroke", "none"); // Assurez-vous qu'il n'y a pas de contour qui pourrait interférer
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("fill", "#000"); // Couleur noire
 
-    // Coordonnées pour la flèche double-chevron remplie (inspirée de votre image)
-    const dUp = "M 50,20 L 80,80 L 65,80 L 65,180 L 35,180 L 35,80 L 20,80 Z"; // Forme double V/W
-    const dDown = "M 50,180 L 80,120 L 65,120 L 65,20 L 35,20 L 35,120 L 20,120 Z";
+            if (direction === 'up') {
+                // Flèche vers le haut (Triangle centré)
+                path.setAttribute("d", "M 50,20 L 80,180 L 20,180 Z");
+                path.setAttribute("transform", "rotate(0, 50, 100)");
+            } else if (direction === 'down') {
+                // Flèche vers le bas (Triangle centré)
+                path.setAttribute("d", "M 50,180 L 80,20 L 20,20 Z");
+                path.setAttribute("transform", "rotate(0, 50, 100)");
+            }
 
-    if (direction === 'up') {
-        // Flèche vers le haut (Double chevron/W)
-        path.setAttribute("d", dUp);
-    } else if (direction === 'down') {
-        // Flèche vers le bas (Double chevron/M)
-        path.setAttribute("d", dDown);
-    }
-
-    svg.appendChild(path);
-    return svg;
-}
+            svg.appendChild(path);
+            return svg;
+        }
 
 
         // --- RENDU DES CODES (Multi-Pages) ---
