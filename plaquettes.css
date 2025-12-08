@@ -1,230 +1,381 @@
-:root { 
-  /* Palette Pro SaaS (Slate) */
-  --bg-app: #0f172a;       
-  --bg-sidebar: #1e293b;   
-  --bg-panel: #334155;     
-  
-  --border-subtle: #334155;
-  --border-focus: #3b82f6;
+:root {
+            /* Palette Pro SaaS (Slate) */
+            --bg-app: #0f172a;
+            --bg-sidebar: #1e293b;
+            --bg-panel: #334155;
 
-  --text-main: #f8fafc;
-  --text-secondary: #94a3b8;
-  
-  --primary: #3b82f6;      
-  --primary-hover: #2563eb;
-  
-  --success: #10b981;
-  --danger: #ef4444;
+            --border-subtle: #334155;
+            --border-focus: #3b82f6;
 
-  --radius: 6px; 
-}
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
 
-body { 
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-main); 
-  margin: 0; padding: 0; 
-  height: 100vh; 
-  display: flex; 
-  overflow: hidden; 
-}
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
 
-/* --- SIDEBAR (GAUCHE) --- */
-.sidebar {
-  width: 320px; 
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-subtle);
-  display: flex; flex-direction: column;
-  z-index: 10; 
-  flex-shrink: 0;
-  box-shadow: 4px 0 24px rgba(0,0,0,0.2);
-}
+            --success: #10b981;
+            --danger: #ef4444;
 
-/* --- ONGLETS --- */
-.tabs-nav {
-  display: flex;
-  background: #0f172a;
-  padding: 3px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-subtle);
-}
-.tab-btn {
-  flex: 1; 
-  padding: 8px; 
-  background: transparent; 
-  border: none;
-  color: var(--text-secondary); 
-  cursor: pointer; 
-  font-weight: 500;
-  font-size: 0.85rem;
-  border-radius: 4px; 
-  transition: all 0.15s ease;
-}
-.tab-btn:hover { color: #fff; }
-.tab-btn.active { 
-  background: var(--bg-panel);
-  color: #fff; 
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
+            --radius: 6px;
+        }
 
-.sidebar-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-sidebar);
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
 
-.app-title {
-  margin: 0; color: #fff; font-weight: 600; font-size: 1.1rem;
-}
+        /* --- SIDEBAR (GAUCHE) --- */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            flex-shrink: 0;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        }
 
-.sidebar-content {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-  display: flex; flex-direction: column; gap: 20px;
-}
+        /* --- ONGLETS --- */
+        .tabs-nav {
+            display: flex;
+            background: #0f172a;
+            padding: 3px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-subtle);
+        }
 
-/* Form Elements */
-.control-group { display: flex; flex-direction: column; gap: 6px; }
-.control-group label { font-weight: 500; font-size: 0.8rem; color: var(--text-secondary); }
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
 
-input[type="number"], select { 
-  padding: 10px 12px; 
-  border-radius: var(--radius); 
-  border: 1px solid var(--border-subtle); 
-  background: var(--bg-app); 
-  color: #fff; 
-  outline: none; 
-  font-size: 0.9rem;
-  width: 100%; box-sizing: border-box;
-}
-input[type="number"]:focus, select:focus { border-color: var(--primary); }
+        .tab-btn:hover {
+            color: #fff;
+        }
 
-.divider { border: 0; border-top: 1px solid var(--border-subtle); width: 100%; margin: 10px 0; }
+        .tab-btn.active {
+            background: var(--bg-panel);
+            color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
 
-/* Import Zone */
-.drop-zone {
-  border: 1px dashed var(--border-subtle);
-  background: var(--bg-app);
-  border-radius: var(--radius);
-  padding: 25px 15px;
-  text-align: center;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.drop-zone:hover { border-color: var(--primary); color: var(--primary); background: rgba(59, 130, 246, 0.05); }
+        .sidebar-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-sidebar);
+        }
 
-.status-card {
-    background: #064e3b; border: 1px solid #059669; border-radius: var(--radius);
-    padding: 10px; display: none; margin-top: 10px;
-}
+        .app-title {
+            margin: 0;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
 
-/* Grid Settings */
-.grid-settings {
-  background: var(--bg-panel);
-  padding: 12px;
-  border-radius: var(--radius);
-  display: flex; flex-direction: column; gap: 10px;
-  border: 1px solid var(--border-subtle);
-}
-.grid-row { display: flex; gap: 10px; }
-.grid-col { flex: 1; }
+        .sidebar-content {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-/* Actions Footer */
-.sidebar-footer {
-  padding: 15px 24px;
-  border-top: 1px solid var(--border-subtle);
-  display: flex; flex-direction: column; gap: 10px;
-  background: var(--bg-sidebar);
-}
+        /* Form Elements */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-button.action-btn { 
-  padding: 10px; border-radius: var(--radius); border: 1px solid transparent; 
-  font-weight: 500; font-size: 0.9rem; cursor: pointer;
-  display: flex; justify-content: center; align-items: center; gap: 8px;
-}
-.btn-print { background: var(--text-main); color: var(--bg-app); }
-.btn-download { background: transparent; color: var(--text-main); border: 1px solid var(--border-subtle); }
-.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); font-size: 0.8rem; }
+        .control-group label {
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
 
-/* --- MAIN PREVIEW (DROITE) --- */
-.main-content {
-  flex: 1; 
-  background: #020617; 
-  background-image: radial-gradient(#1e293b 1px, transparent 1px);
-  background-size: 20px 20px;
-  display: flex; flex-direction: column; 
-  position: relative;
-  overflow: hidden; 
-}
+        input[type="number"],
+        select {
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-app);
+            color: #fff;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-.toolbar-preview {
-  position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
-  padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-subtle);
-  display: flex; align-items: center; gap: 15px; z-index: 50;
-  color: white; font-size: 0.8rem;
-}
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--primary);
+        }
 
-.preview-scroll-wrapper {
-  width: 100%; height: 100%;
-  overflow: auto;
-  display: flex; justify-content: center; align-items: flex-start;
-  padding: 60px 40px; 
-  box-sizing: border-box;
-}
+        .divider {
+            border: 0;
+            border-top: 1px solid var(--border-subtle);
+            width: 100%;
+            margin: 10px 0;
+        }
 
-.sheet-transform-layer {
-  transform-origin: top center;
-  transition: transform 0.2s ease-out;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-}
+        /* Import Zone */
+        .drop-zone {
+            border: 1px dashed var(--border-subtle);
+            background: var(--bg-app);
+            border-radius: var(--radius);
+            padding: 25px 15px;
+            text-align: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-/* FEUILLE */
-.sheet {
-  background: white; color: black;
-  position: relative; box-sizing: border-box; overflow: hidden;
-  width: 210mm; height: 297mm; /* A4 Portrait Default */
-  
-  /* Variables CSS Grille (valeurs initiales définies dans le JS) */
-  --mt: 4.5mm; --ml: 5mm; --cols: 3; --rows: 8; --lh: 36mm;
-  
-  padding-top: var(--mt);
-  padding-left: var(--ml);
-  padding-right: var(--ml);
-}
+        .drop-zone:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
 
-/* Grille CSS */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(var(--cols), 1fr);
-    grid-template-rows: repeat(var(--rows), var(--lh));
-    width: 100%;
-    height: auto;
-    justify-content: start;
-    align-content: start;
-}
+        .status-card {
+            background: #064e3b;
+            border: 1px solid #059669;
+            border-radius: var(--radius);
+            padding: 10px;
+            display: none;
+            margin-top: 10px;
+        }
 
-.barcode-cell {
-    width: 100%; height: 100%;
-    border: 1px dashed rgba(0,0,0,0.1); /* Guides visuels */
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    overflow: hidden; box-sizing: border-box;
-    padding: 2px;
-}
+        /* Grid Settings */
+        .grid-settings {
+            background: var(--bg-panel);
+            padding: 12px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--border-subtle);
+        }
 
-/* Impression */
-@media print {
-    @page { margin: 0; }
-    .sidebar, .toolbar-preview { display: none !important; }
-    .main-content, .preview-scroll-wrapper, .sheet-transform-layer { 
-        display: block !important; position: static !important; 
-        width: auto !important; height: auto !important; 
-        overflow: visible !important; transform: none !important; 
-        margin: 0 !important; padding: 0 !important; background: white !important;
-    }
-    .sheet { margin: 0 !important; box-shadow: none !important; }
-    .barcode-cell { border: none !important; } /* Cacher les guides à l'impression */
-}
+        .grid-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .grid-col {
+            flex: 1;
+        }
+
+        /* Actions Footer */
+        .sidebar-footer {
+            padding: 15px 24px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--bg-sidebar);
+        }
+
+        button.action-btn {
+            padding: 10px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.1s;
+        }
+
+        button.action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-print {
+            background: var(--text-main);
+            color: var(--bg-app);
+        }
+
+        .btn-print:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .btn-download {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: var(--bg-panel);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            font-size: 0.8rem;
+        }
+
+        /* --- MAIN PREVIEW (DROITE) --- */
+        .main-content {
+            flex: 1;
+            background: #020617;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toolbar-preview {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 50;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .preview-scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 60px 40px;
+            box-sizing: border-box;
+        }
+
+        .sheet-transform-layer {
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Espacement entre les pages dans l'aperçu */
+        .sheet + .sheet {
+            margin-top: 40px;
+        }
+
+
+        /* FEUILLE */
+        .sheet {
+            background: white;
+            color: black;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 210mm;
+            height: 297mm;
+            /* A4 Portrait Default */
+
+            /* Variables CSS Grille */
+            --mt: 4.5mm;
+            --ml: 5mm;
+            --cols: 3;
+            --rows: 8;
+            --lh: 36mm;
+
+            padding-top: var(--mt);
+            padding-left: var(--ml);
+            padding-right: var(--ml);
+        }
+
+        /* Grille CSS */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(var(--cols), 1fr);
+            grid-template-rows: repeat(var(--rows), var(--lh));
+            width: 100%;
+            height: auto;
+            justify-content: start;
+            align-content: start;
+        }
+
+        .barcode-cell {
+            width: 100%;
+            height: 100%;
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            /* Guides visuels */
+            display: flex;
+            flex-direction: row; /* MODIFIÉ : Aligner la flèche et le code horizontalement */
+            align-items: center; /* Centrer verticalement */
+            justify-content: center;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 2px;
+        }
+
+        /* Impression */
+        @media print {
+
+            @page {
+                margin: 0;
+            }
+
+            .sidebar,
+            .toolbar-preview {
+                display: none !important;
+            }
+
+            .main-content,
+            .preview-scroll-wrapper {
+                display: block !important;
+                position: static !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+
+            .sheet-transform-layer {
+                display: block !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+
+            .sheet {
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always; /* Force une nouvelle page pour chaque feuille */
+            }
+
+            .sheet:last-child {
+                page-break-after: avoid; /* Évite un saut de page inutile à la fin */
+            }
+
+            .barcode-cell {
+                border: none !important;
+            }
+        }
