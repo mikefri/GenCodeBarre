@@ -656,33 +656,50 @@
 
 
         // --- CRÉATION DU SVG DE FLÈCHE (NOUVEAU) ---
-        function createArrowSVG(direction) {
-            if (direction === 'none') return null;
+        function createSpearheadArrowSVG(direction) {
+    if (direction === 'none') return null;
 
-            // Dimensions : environ 10mm de large, 20mm de haut
-            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            svg.setAttribute("width", "10mm");
-            svg.setAttribute("height", "20mm");
-            svg.setAttribute("viewBox", "0 0 100 200");
-            svg.style.marginRight = "5px"; // Petit espacement entre la flèche et le code
-            svg.style.flexShrink = "0"; // Pour éviter que la flèche ne soit compressée
+    // Dimensions : environ 10mm de large, 20mm de haut
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "10mm");
+    svg.setAttribute("height", "20mm");
+    svg.setAttribute("viewBox", "0 0 100 200");
+    svg.style.marginRight = "5px"; 
+    svg.style.flexShrink = "0"; 
 
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("fill", "#000"); // Couleur noire
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    // Couleur noire pleine
+    path.setAttribute("fill", "#000"); 
 
-            if (direction === 'up') {
-                // Flèche vers le haut (Triangle centré)
-                path.setAttribute("d", "M 50,20 L 80,180 L 20,180 Z");
-                path.setAttribute("transform", "rotate(0, 50, 100)");
-            } else if (direction === 'down') {
-                // Flèche vers le bas (Triangle centré)
-                path.setAttribute("d", "M 50,180 L 80,20 L 20,20 Z");
-                path.setAttribute("transform", "rotate(0, 50, 100)");
-            }
+    if (direction === 'up') {
+        // Flèche vers le haut (Pointe de Lance)
+        // Les coordonnées créent :
+        // 1. Un triangle (pointe) entre y=20 et y=50
+        // 2. Un rectangle (corps) entre y=50 et y=180
+        path.setAttribute("d", 
+            // Pointe (Triangle)
+            "M 50,20 L 70,50 H 60 " + // Pointe (50,20) -> Droite (70,50) -> Coin (60,50)
+            // Corps (Rectangle)
+            "V 180 H 40 V 50 " + // Descend à la base (180), traverse à gauche (40), remonte (50)
+            // Fin de la Pointe
+            "H 30 Z" // Retourne au point de départ du côté gauche de la pointe (30,50) -> Ferme (Z)
+        );
+    } else if (direction === 'down') {
+        // Flèche vers le bas (Pointe de Lance)
+        // Même principe, mais inversé
+        path.setAttribute("d", 
+            // Pointe (Triangle)
+            "M 50,180 L 70,150 H 60 " + // Pointe (50,180) -> Gauche (70,150) -> Coin (60,150)
+            // Corps (Rectangle)
+            "V 20 H 40 V 150 " + // Remonte au sommet (20), traverse à gauche (40), redescend (150)
+            // Fin de la Pointe
+            "H 30 Z" // Retourne au point de départ du côté gauche de la pointe (30,150) -> Ferme (Z)
+        );
+    }
 
-            svg.appendChild(path);
-            return svg;
-        }
+    svg.appendChild(path);
+    return svg;
+}
 
 
         // --- RENDU DES CODES (Multi-Pages) ---
