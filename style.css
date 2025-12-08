@@ -342,3 +342,47 @@
     justify-content: center; /* Centre horizontalement (gauche/droite) */
     align-items: center;     /* Centre verticalement (haut/bas) */
 }
+
+.help-btn {
+  /* Positionnement Fixe */
+  position: fixed;
+  top: 15px;      
+  right: 15px;
+  z-index: 1000;
+  
+  /* Dimensions et forme */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%; /* Rend le bouton rond */
+  padding: 0;
+  
+  /* Centrage de l'icône et apparence */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.4em; /* Taille de l'icône */
+  
+  /* Couleurs (utilisons un gris neutre pour qu'il ne soit pas trop intrusif) */
+  background-color: #e2e8f0; /* Un gris clair */
+  color: #475569; /* Gris foncé pour l'icône */
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Effet au survol */
+.help-btn:hover {
+  background-color: #cbd5e1; /* Gris légèrement plus foncé au survol */
+  color: #1e293b; /* Icône plus foncée */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px); /* Petit effet de soulèvement */
+}
+
+/* Si vous préférez qu'il utilise votre couleur primaire pour être plus visible */
+/* .help-btn {
+    ...
+    background-color: var(--color-primary, #3b82f6);
+    color: white;
+    ...
+}
