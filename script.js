@@ -1,80 +1,87 @@
-const refs = {
-      texte: document.getElementById("texte"),
-      type: document.getElementById("type"),
-      showText: document.getElementById("showText"),
-      
-      slider: document.getElementById("sizeSlider"),
-      sliderVal: document.getElementById("codeSizeVal"),
-      
-      target: document.getElementById("canvas-target"),
-      pageSheet: document.getElementById("pageSheet"),
-      sheetLayer: document.getElementById("sheetLayer"),
-      printStyle: document.getElementById("print-style"),
-      printBtn: document.getElementById("printBtn"),
-      downloadBtn: document.getElementById("downloadBtn"),
-      formatInputs: document.querySelectorAll('input[name="format"]'),
-      orientationInputs: document.querySelectorAll('input[name="orientation"]'),
-      
-      titleInput: document.getElementById("customTitle"),
-      titleSizeSlider: document.getElementById("titleSizeSlider"),
-      titleSizeVal: document.getElementById("titleSizeVal"),
-      titleDisplay: document.getElementById("title-display"),
-      
-      // Nouveau Zoom
-      previewZoomSlider: document.getElementById("previewZoomSlider"),
-      previewZoomVal: document.getElementById("previewZoomVal"),
-      
-      tabs: document.querySelectorAll('.tab-btn'),
-      tabContents: document.querySelectorAll('.tab-content'),
+document.addEventListener('DOMContentLoaded', () => {
 
-      excelInput: document.getElementById("excelInput"),
-      dropZone: document.getElementById("dropZone"),
-      importStatus: document.getElementById("importStatus"),
-      importCount: document.getElementById("importCount"),
-      clearDataBtn: document.getElementById("clearDataBtn"),
-      regenerateBatchBtn: document.getElementById("regenerateBatchBtn"),
-      btnTabGen: document.getElementById("btn-tab-gen")
+    const refs = {
+        texte: document.getElementById("texte"),
+        type: document.getElementById("type"),
+        showText: document.getElementById("showText"),
+        
+        slider: document.getElementById("sizeSlider"),
+        sliderVal: document.getElementById("codeSizeVal"),
+        
+        target: document.getElementById("canvas-target"),
+        pageSheet: document.getElementById("pageSheet"),
+        sheetLayer: document.getElementById("sheetLayer"),
+        printStyle: document.getElementById("print-style"),
+        printBtn: document.getElementById("printBtn"),
+        downloadBtn: document.getElementById("downloadBtn"),
+        formatInputs: document.querySelectorAll('input[name="format"]'),
+        orientationInputs: document.querySelectorAll('input[name="orientation"]'),
+        
+        titleInput: document.getElementById("customTitle"),
+        titleSizeSlider: document.getElementById("titleSizeSlider"),
+        titleSizeVal: document.getElementById("titleSizeVal"),
+        titleDisplay: document.getElementById("title-display"),
+        
+        // Nouveau Zoom
+        previewZoomSlider: document.getElementById("previewZoomSlider"),
+        previewZoomVal: document.getElementById("previewZoomVal"),
+        
+        tabs: document.querySelectorAll('.tab-btn'),
+        tabContents: document.querySelectorAll('.tab-content'),
+
+        excelInput: document.getElementById("excelInput"),
+        dropZone: document.getElementById("dropZone"),
+        importStatus: document.getElementById("importStatus"),
+        importCount: document.getElementById("importCount"),
+        clearDataBtn: document.getElementById("clearDataBtn"),
+        regenerateBatchBtn: document.getElementById("regenerateBatchBtn"),
+        btnTabGen: document.getElementById("btn-tab-gen"),
+
+        // NOUVELLES RÉFÉRENCES POUR LA MODALE D'AIDE
+        helpButton: document.getElementById('helpButton'),
+        helpModal: document.getElementById('helpModal'),
+        closeModalBtn: document.getElementById('closeModalBtn')
     };
 
     // --- VARIABLES D'ÉTAT ---
     let appState = {
         mode: 'single', // 'single' ou 'batch'
-        batchData: []   // Stocke les codes importés
+        batchData: [] // Stocke les codes importés
     };
 
     // --- GESTION DU ZOOM APERÇU ---
     refs.previewZoomSlider.addEventListener("input", (e) => {
-      const val = e.target.value;
-      refs.sheetLayer.style.transform = `scale(${val})`;
-      refs.previewZoomVal.textContent = Math.round(val * 100) + "%";
+        const val = e.target.value;
+        refs.sheetLayer.style.transform = `scale(${val})`;
+        refs.previewZoomVal.textContent = Math.round(val * 100) + "%";
     });
 
     // --- GESTION DES ONGLETS ---
     function switchTab(targetId) {
-      refs.tabs.forEach(t => {
-        if(t.getAttribute('data-target') === targetId) t.classList.add('active');
-        else t.classList.remove('active');
-      });
-      refs.tabContents.forEach(c => {
-        if(c.id === targetId) c.classList.add('active');
-        else c.classList.remove('active');
-      });
+        refs.tabs.forEach(t => {
+            if(t.getAttribute('data-target') === targetId) t.classList.add('active');
+            else t.classList.remove('active');
+        });
+        refs.tabContents.forEach(c => {
+            if(c.id === targetId) c.classList.add('active');
+            else c.classList.remove('active');
+        });
     }
     refs.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.getAttribute('data-target'))));
 
     // --- FONCTIONS GENERATEUR ---
     function updateTitle() {
-      refs.titleDisplay.textContent = refs.titleInput.value;
-      refs.titleDisplay.style.fontSize = refs.titleSizeSlider.value + 'em';
-      refs.titleSizeVal.textContent = refs.titleSizeSlider.value;
+        refs.titleDisplay.textContent = refs.titleInput.value;
+        refs.titleDisplay.style.fontSize = refs.titleSizeSlider.value + 'em';
+        refs.titleSizeVal.textContent = refs.titleSizeSlider.value;
     }
 
     function updatePageConfig() {
-      const format = document.querySelector('input[name="format"]:checked').value;
-      const orientation = document.querySelector('input[name="orientation"]:checked').value;
-      refs.pageSheet.className = `sheet ${format} ${orientation}`;
-      // On ajoute margin:0 dans la regle @page pour l'impression
-      refs.printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
+        const format = document.querySelector('input[name="format"]:checked').value;
+        const orientation = document.querySelector('input[name="orientation"]:checked').value;
+        refs.pageSheet.className = `sheet ${format} ${orientation}`;
+        // On ajoute margin:0 dans la regle @page pour l'impression
+        refs.printStyle.innerHTML = `@page { size: ${format.toUpperCase()} ${orientation}; margin: 0; }`;
     }
 
     function generer() {
@@ -139,32 +146,32 @@ const refs = {
     }
 
     function calculCheckDigit(ean12) {
-      let sum = 0;
-      for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
-      const rem = sum % 10;
-      return rem === 0 ? 0 : 10 - rem;
+        let sum = 0;
+        for (let i = 0; i < 12; i++) sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]);
+        const rem = sum % 10;
+        return rem === 0 ? 0 : 10 - rem;
     }
 
     // --- IMPORT EXCEL ---
     function handleFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = e.target.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        let codes = json.map(row => row[0]).filter(cell => cell !== undefined && cell !== null && cell !== "");
-        
-        appState.batchData = codes;
-        appState.mode = 'batch'; 
-        updateImportStatus(codes.length);
-        switchTab('tab-generator');
-        generer();
-      };
-      reader.readAsBinaryString(file);
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            let codes = json.map(row => row[0]).filter(cell => cell !== undefined && cell !== null && cell !== "");
+            
+            appState.batchData = codes;
+            appState.mode = 'batch';
+            updateImportStatus(codes.length);
+            switchTab('tab-generator');
+            generer();
+        };
+        reader.readAsBinaryString(file);
     }
 
     function updateImportStatus(count) {
@@ -185,7 +192,7 @@ const refs = {
         refs.excelInput.value = "";
     }
 
-    // --- LISTENERS ---
+    // --- LISTENERS PRINCIPAUX ---
     refs.texte.addEventListener("input", () => { appState.mode = 'single'; generer(); });
     refs.type.addEventListener("change", generer);
     refs.showText.addEventListener("change", generer);
@@ -202,10 +209,10 @@ const refs = {
         refs.sheetLayer.style.transform = "none";
         
         // On s'assure de capturer la feuille entière
-        html2canvas(document.getElementById("pageSheet"), { 
-            scale: 2, 
-            backgroundColor: "#ffffff", 
-            logging: false 
+        html2canvas(document.getElementById("pageSheet"), {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            logging: false
         })
         .then(canvas => {
             const a = document.createElement("a");
@@ -213,7 +220,7 @@ const refs = {
             a.href = canvas.toDataURL("image/png");
             a.click();
             // On remet le zoom utilisateur
-            refs.sheetLayer.style.transform = originalTransform; 
+            refs.sheetLayer.style.transform = originalTransform;
         });
     });
 
@@ -231,70 +238,33 @@ const refs = {
         if(e.dataTransfer.files.length) { refs.excelInput.files = e.dataTransfer.files; handleFile({target: refs.excelInput}); } 
     });
 
-    // Initialisation
-    window.addEventListener('load', () => { 
-        updatePageConfig(); 
-        generer(); 
-        updateTitle();
-        // Set zoom initial
-        refs.sheetLayer.style.transform = `scale(0.65)`;
-    });
-
-
-// Initialisation
-    window.addEventListener('load', () => { 
-        updatePageConfig(); 
-        generer(); 
-        updateTitle();
-        // Set zoom initial
-        refs.sheetLayer.style.transform = `scale(0.65)`;
-    });
-
-    // ******* AJOUTER CE BLOC *******
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(registration => {
-            console.log('Service Worker enregistré avec succès :', registration.scope);
-          })
-          .catch(error => {
-            console.error('Échec de l\'enregistrement du Service Worker :', error);
-          });
-      });
-    }
-
-document.addEventListener('DOMContentLoaded', () => {
-
-
-    const helpButton = document.getElementById('helpButton');
-    const helpModal = document.getElementById('helpModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
+    // --- GESTION DE LA MODALE D'AIDE (CORRIGÉ) ---
 
     // Fonction pour ouvrir la modale
     function openModal() {
-        helpModal.classList.add('open');
+        if (refs.helpModal) refs.helpModal.classList.add('open');
     }
 
     // Fonction pour fermer la modale
     function closeModal() {
-        helpModal.classList.remove('open');
+        if (refs.helpModal) refs.helpModal.classList.remove('open');
     }
 
     // 1. Ouvrir la modale au clic sur le bouton '?'
-    if (helpButton) {
-        helpButton.addEventListener('click', openModal);
+    if (refs.helpButton) {
+        refs.helpButton.addEventListener('click', openModal);
     }
 
     // 2. Fermer la modale au clic sur le bouton 'X'
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeModal);
+    if (refs.closeModalBtn) {
+        refs.closeModalBtn.addEventListener('click', closeModal);
     }
 
     // 3. Fermer la modale si on clique en dehors (sur l'overlay)
-    if (helpModal) {
-        helpModal.addEventListener('click', (e) => {
+    if (refs.helpModal) {
+        refs.helpModal.addEventListener('click', (e) => {
             // Ne fermer que si l'élément cliqué est l'overlay lui-même
-            if (e.target === helpModal) {
+            if (e.target === refs.helpModal) {
                 closeModal();
             }
         });
@@ -302,10 +272,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Fermer la modale si on appuie sur la touche ESC
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && helpModal.classList.contains('open')) {
+        if (e.key === 'Escape' && refs.helpModal && refs.helpModal.classList.contains('open')) {
             closeModal();
         }
     });
 
-  
+    // --- INITIALISATION AU CHARGEMENT (EXECUTE MAINTENANT DANS DOMContentLoaded) ---
+    updatePageConfig(); 
+    generer(); 
+    updateTitle();
+    // Set zoom initial
+    refs.sheetLayer.style.transform = `scale(0.65)`;
+
 });
+
+
+// --- GESTION DU SERVICE WORKER (Peut rester en dehors du DOMContentLoaded) ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(registration => {
+                console.log('Service Worker enregistré avec succès :', registration.scope);
+            })
+            .catch(error => {
+                console.error('Échec de l\'enregistrement du Service Worker :', error);
+            });
+    });
+}
