@@ -507,3 +507,12 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px); /* Petit effet de soulèvement */
 }
+
+
+    /* --- SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-app); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-panel); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+
