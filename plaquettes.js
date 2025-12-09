@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- MISE À JOUR DE L'OBJET REFS AVEC LES ÉLÉMENTS DE LA MODALE ---
+    // --- MISE À JOUR DE L'OBJET REFS AVEC TOUS LES ÉLÉMENTS (INCLUANT helpButton) ---
     const refs = {
         excelInput: document.getElementById('excelInput'),
         dropZone: document.getElementById('dropZone'),
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gridPresetSelect: document.getElementById('gridPresetSelect'),
         arrowOption: document.getElementById('arrowOption'),
 
-        // ✅ NOUVELLES RÉFÉRENCES MODALE
+        // ✅ RÉFÉRENCES MODALE (helpButton est de retour)
         helpModal: document.getElementById('helpModal'),
         helpButton: document.getElementById('helpButton'), 
         closeModalBtn: document.getElementById('closeModalBtn')
@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ------------------------------------------------
-    // --- GESTION DE LA MODALE D'AIDE (MAINTENANT CORRIGÉE) ---
+    // --- GESTION DE LA MODALE D'AIDE (CORRIGÉE) ---
     // ------------------------------------------------
 
     // Fonction pour ouvrir la modale
@@ -452,7 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 1. Ouvrir la modale au clic sur le bouton '?'
-    // (Fonctionne si vous ajoutez <button id="helpButton">?</button> dans votre HTML)
     if (refs.helpButton) {
         refs.helpButton.addEventListener('click', openModal);
     }
