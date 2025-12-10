@@ -345,7 +345,8 @@
             }
 
             .sidebar,
-            .toolbar-preview {
+            .toolbar-preview
+            .help-btn {
                 display: none !important;
             }
 
