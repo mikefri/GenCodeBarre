@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pageSheet: document.getElementById('pageSheet'),
         sheetLayer: document.getElementById('sheetLayer'),
         zoomSlider: document.getElementById('zoomSlider'),
+        zoomValue: document.getElementById('zoomValue'),
 
         // Inputs Config
         codeType: document.getElementById('codeType'),
@@ -73,9 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FIN PRESETS ---
 
     // --- GESTION DU ZOOM ---
-    refs.zoomSlider.addEventListener('input', (e) => {
-        refs.sheetLayer.style.transform = `scale(${e.target.value})`;
-    });
+refs.zoomSlider.addEventListener('input', (e) => {
+        const scale = parseFloat(e.target.value);
+        // 1. Mettre à jour l'échelle visuelle
+        refs.sheetLayer.style.transform = `scale(${scale})`;
+
+        // 2. Mettre à jour le pourcentage affiché
+        const percentage = Math.round(scale * 100);
+        refs.zoomValue.textContent = `${percentage}%`;
+    });
 
     // --- MISE A JOUR CSS GRILLE ---
     function updateSheetCSS(sheetElement) {
@@ -480,7 +487,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Init ---
-    populatePresets();
-    updateGridCSS();
-    renderBarcodes(); // Affiche l'exemple au démarrage
+    populatePresets();
+    updateGridCSS();
+    renderBarcodes(); // Affiche l'exemple au démarrage
+
+    // AJOUT: Initialiser le pourcentage de zoom
+    const initialScale = parseFloat(refs.zoomSlider.value);
+    const initialPercentage = Math.round(initialScale * 100);
+    refs.zoomValue.textContent = `${initialPercentage}%`;
 });
