@@ -206,44 +206,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     
     refs.downloadBtn.addEventListener("click", () => {
-    // On récupère la librairie jsPDF à partir de l'objet window (car importé via CDN)
+    // On récupère la librairie jsPDF à partir de l'objet window
     const { jsPDF } = window.jspdf;
     
     const pageElement = document.getElementById("pageSheet");
     
-    // Pour html2canvas / jsPDF, on enlève temporairement le scale visuel
+    // Sauvegarde la transformation originale du zoom
     const originalTransform = refs.sheetLayer.style.transform;
     refs.sheetLayer.style.transform = "none";
 
-    // 1. Détermine le nom du fichier
-    const fileName = (refs.titleInput.value.trim() || "codes-barres") + ".pdf";
+    // 1. Lance html2canvas pour la capture de la feuille
+    html2canvas(pageElement, {
+        scale: 3, // Augmenté à 3x pour une meilleure qualité
+        backgroundColor: "#ffffff",
+        logging: false
+    })
+    .then(canvas => {
+        // 2. Détermine le format PDF
+        const format = document.querySelector('input[name="format"]:checked').value.toUpperCase();
+        const orientation = document.querySelector('input[name="orientation"]:checked').value === 'landscape' ? 'l' : 'p';
+        
+        // 3. Créer le document PDF
+        // jsPDF gère les dimensions en interne si vous donnez le format (ex: 'A4')
+        const doc = new jsPDF(orientation, 'mm', format); 
+        
+        // Récupère la largeur et la hauteur de la page PDF une fois le format défini
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = doc.internal.pageSize.getHeight();
+        
+        // Convertit le Canvas en image PNG Data URL
+        const imgData = canvas.toDataURL('image/jpeg', 1.0); // Utiliser JPEG avec qualité 1.0 pour réduire la taille du fichier PDF
+        
+        // 4. Ajoute l'image au PDF en forçant la largeur du Canvas à correspondre à la largeur du PDF
+        // La hauteur est calculée automatiquement pour conserver les proportions (aspect ratio)
+        doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, '', 'FAST');
 
-    // 2. Initialise jsPDF
-    const format = document.querySelector('input[name="format"]:checked').value;
-    const orientation = document.querySelector('input[name="orientation"]:checked').value === 'landscape' ? 'l' : 'p';
+        // 5. Sauvegarde
+        const fileName = (refs.titleInput.value.trim() || "codes-barres") + ".pdf";
+        doc.save(fileName);
 
-    // Les dimensions A4 en points (approx 595x842) ou A3 (842x1190) sont gérées par jsPDF
-    const doc = new jsPDF(orientation, 'pt', format);
-    
-    // 3. Utiliser html2canvas pour capturer l'élément et le mettre dans le PDF
-    // Ceci permet de capturer les codes-barres (SVG/Canvas) et le titre.
-    doc.html(pageElement, {
-        callback: function (doc) {
-            // Sauvegarde le PDF généré
-            doc.save(fileName);
-
-            // On remet le zoom utilisateur après la sauvegarde
-            refs.sheetLayer.style.transform = originalTransform;
-        },
-        // IMPORTANT : Utiliser une échelle élevée pour une meilleure qualité de l'image raster
-        html2canvas: {
-            scale: 2.5, // 2.5x la résolution du canvas
-            logging: false,
-            backgroundColor: "#ffffff"
-        },
-        x: 0, // Position de départ X
-        y: 0, // Position de départ Y
-        // Le paramètre `width` (par défaut 210mm pour A4) est géré par la taille du doc.
+        // 6. Rétablit le zoom utilisateur
+        refs.sheetLayer.style.transform = originalTransform;
     });
 });
 
