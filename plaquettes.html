@@ -38,9 +38,15 @@
                 <button class="tab-btn" onclick="window.location.href='https://mikefri.github.io/GenCodeBarre/'">Création</button>
                 <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Planches</button>
             </div>
+
+            <button id="openSidebarBtn" class="action-btn btn-primary" style="width: 100%; margin: 15px 0 15px 0;" title="Gérer les codes et l'import">
+                <i class="fas fa-barcode"></i> 1. Codes & Import (Ouvrir)
+            </button>
+
+            <div class="divider"></div>
             
             <div class="control-group">
-                <label>1. Type de Code</label>
+                <label>2. Type de Code</label>
                 <select id="codeType">
                     <option value="CODE128">Code 128</option>
                     <option value="EAN13">EAN-13</option>
@@ -56,11 +62,11 @@
             <div class="divider"></div>
 
             <div class="control-group">
-                <label>2. Configuration Planches</label>
+                <label>3. Configuration Planches</label>
 
                 <select id="gridPresetSelect" style="margin-bottom: 10px;">
                     <option value="perso">Personnalisé</option>
-                </select>
+                    </select>
                 <div class="grid-settings">
                     <div class="grid-row">
                         <div class="grid-col">
@@ -92,7 +98,7 @@
             </div>
 
             <div class="control-group">
-                <label>3. Option Flèche latérale</label>
+                <label>4. Option Flèche latérale</label>
                 <select id="arrowOption" style="margin-bottom: 10px;">
                     <option value="none">Aucune</option>
                     <option value="line-up">↑ Vers le Haut </option>
@@ -110,11 +116,7 @@
     <main class="main-content">
 
         <div class="toolbar-preview">
-            <button id="openSidebarBtn" class="action-btn" title="Gérer les codes et l'import">
-                <i class="fas fa-barcode"></i> Codes & Import
-            </button>
-            
-            <div style="flex-grow: 1;"></div> <span>Zoom Aperçu</span>
+            <span>Zoom Aperçu</span>
             <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.7">
             <span id="zoomValue">70%</span>
         </div>
