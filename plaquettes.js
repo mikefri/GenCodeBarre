@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // -------------------------------------------------------------------------
+
+    // =========================================================================
     // I. RÉFÉRENCES ET VARIABLES GLOBALES
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Utilisation de DOMElements pour la cohérence avec le premier code
     const DOMElements = {
         // Planches et Aperçu
         sheetLayer: document.getElementById('sheetLayer'),
@@ -23,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rowHeight: document.getElementById('rowHeight'),
         arrowOption: document.getElementById('arrowOption'),
 
-        // Source de Données
+        // Source de Données (Excel et Manuel)
         excelInput: document.getElementById('excelInput'),
         dropZone: document.getElementById('dropZone'),
         importStatus: document.getElementById('importStatus'),
@@ -38,117 +40,86 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModalBtn: document.getElementById('closeModalBtn')
     };
 
-    let globalCodeData = []; // Stocke les données importées ou manuelles
-    let inputCount = 2; // Compteur pour les inputs manuels (commence à 2 car 2 dans le HTML)
-
-    // Définitions des formats de planches courants (Presets)
+    let globalCodeData = []; // Stocke les données importées (Excel)
+    let inputCount = 2; // Compteur pour les inputs manuels (commence à 2 pour les 2 du HTML)
+    
+    // Définitions des formats de planches courants (Presets) - FUSION DES DEUX LISTES
+    // NOTE: Le second code utilisait un tableau `gridPresets`, nous allons harmoniser en utilisant l'objet du premier code pour la clé (plus simple à gérer).
     const GRID_PRESETS = {
         'perso': { name: 'Personnalisé', mt: 4.5, ml: 5, cols: 3, rows: 8, lh: 36 },
         'avery_l7160': { name: 'Avery L7160 (65 étiquettes)', mt: 11.7, ml: 8.5, cols: 5, rows: 13, lh: 26.7 },
         'avery_j8163': { name: 'Avery J8163 (14 étiquettes)', mt: 9.9, ml: 10, cols: 2, rows: 7, lh: 42.4 },
         'avery_l7120': { name: 'Avery L7120 (10 étiquettes)', mt: 10, ml: 10, cols: 1, rows: 10, lh: 59.4 },
+        
+        // Ajout des presets spécifiques du second code sous des clés uniques
+        'planche_24': { name: 'Planche de 24 (70x36)', mt: 3.5, ml: 0, cols: 3, rows: 8, lh: 36 },
+        'planche_4': { name: 'Planche de 4 (210x74)', mt: 0, ml: 0, cols: 1, rows: 4, lh: 74 },
+        'petites_etiquettes': { name: 'Petites Étiquettes (4x10)', mt: 5, ml: 5, cols: 4, rows: 10, lh: 25 },
+        'tres_grandes': { name: 'Très Grandes (2x2)', mt: 15, ml: 15, cols: 2, rows: 2, lh: 120 },
     };
 
-    // -------------------------------------------------------------------------
-    // II. GESTION DES PRÉSÉLECTIONS (PRESETS)
-    // -------------------------------------------------------------------------
 
-    /**
-     * Remplit le menu déroulant des presets.
-     */
+    // =========================================================================
+    // II. LOGIQUE DES PRESETS
+    // =========================================================================
+
     function populatePresets() {
-        DOMElements.gridPresetSelect.innerHTML = '<option value="" selected disabled>Sélectionner un Modèle prédéfini...</option>';
+        DOMElements.gridPresetSelect.innerHTML = '<option value="perso" selected>Personnalisé</option><option value="" disabled>--- Modèles prédéfinis ---</option>';
         for (const key in GRID_PRESETS) {
+            if (key === 'perso') continue;
             const preset = GRID_PRESETS[key];
             const option = document.createElement('option');
             option.value = key;
             option.textContent = preset.name;
             DOMElements.gridPresetSelect.appendChild(option);
         }
-        DOMElements.gridPresetSelect.value = 'perso'; // Sélectionne 'Personnalisé' par défaut
+        DOMElements.gridPresetSelect.value = 'perso'; 
     }
 
-    /**
-     * Applique les valeurs d'un preset aux champs d'input de la grille.
-     * @param {string} presetKey - Clé du preset.
-     */
     function applyPreset(presetKey) {
-        if (presetKey === 'perso') return; // Ne fait rien si 'Personnalisé' est sélectionné
+        if (presetKey === 'perso' || !GRID_PRESETS[presetKey]) return;
 
         const preset = GRID_PRESETS[presetKey];
-        if (preset) {
-            DOMElements.marginTop.value = preset.mt;
-            DOMElements.marginLeft.value = preset.ml;
-            DOMElements.nbCols.value = preset.cols;
-            DOMElements.nbRows.value = preset.rows;
-            DOMElements.rowHeight.value = preset.lh;
-            
-            // Met à jour les variables CSS pour l'aperçu immédiatement
-            updateSheetStyles();
-            generateSheets();
-        }
+        DOMElements.marginTop.value = preset.mt;
+        DOMElements.marginLeft.value = preset.ml;
+        DOMElements.nbCols.value = preset.cols;
+        DOMElements.nbRows.value = preset.rows;
+        DOMElements.rowHeight.value = preset.lh;
+        
+        updateSheetStyles();
+        generateSheets();
     }
 
-    // -------------------------------------------------------------------------
-    // III. GESTION DES SAISIES MANUELLES (Nouveauté : inputs individuels)
-    // -------------------------------------------------------------------------
 
-    /**
-     * Crée un nouvel élément input de code et l'ajoute.
-     */
+    // =========================================================================
+    // III. GESTION DES SAISIES MANUELLES
+    // (Inclus dans la génération pour récupérer les codes si Excel est vide)
+    // =========================================================================
+
     function createNewCodeInput(placeholderText) {
         const newInput = document.createElement('input');
-        
-        // Configure l'input
         newInput.type = 'text';
         newInput.className = 'manual-code-input';
         newInput.dataset.index = inputCount;
         newInput.placeholder = placeholderText || `Code ${inputCount + 1}`;
+        newInput.addEventListener('input', generateSheets);
         
-        // Événement : régénération à la saisie
-        newInput.addEventListener('input', generateSheets); 
-        
-        // Ajout du champ et incrémentation
         DOMElements.manualInputContainer.appendChild(newInput);
         inputCount++;
     }
 
-    // Initialisation des écouteurs pour les deux champs par défaut dans le HTML
-    DOMElements.manualInputContainer.querySelectorAll('.manual-code-input').forEach(input => {
-        input.addEventListener('input', generateSheets);
-    });
-
-    // Écouteur pour le bouton d'ajout de code
-    DOMElements.addCodeInputBtn.addEventListener('click', () => {
-        createNewCodeInput();
-        // Focus sur le nouveau champ pour un flux de travail rapide
-        const lastInput = DOMElements.manualInputContainer.lastElementChild;
-        if (lastInput) lastInput.focus();
-    });
-
-    /**
-     * Récupère les codes depuis tous les inputs manuels.
-     * @returns {string[]} Tableau des codes non vides.
-     */
     function getManualCodes() {
         const inputs = DOMElements.manualInputContainer.querySelectorAll('.manual-code-input');
         const codes = [];
-
         inputs.forEach(input => {
             const value = input.value.trim();
-            if (value) {
-                codes.push(value);
-            }
+            if (value) codes.push(value);
         });
         return codes;
     }
 
-    /**
-     * Masque/affiche les inputs manuels ou le bouton d'import Excel
-     * en fonction de si des données Excel sont chargées.
-     * @param {boolean} isExcelLoaded - Vrai si des données Excel sont dans globalCodeData.
-     */
     function toggleManualInputVisibility(isExcelLoaded) {
+        // Logique du premier code, plus complète pour désactiver la zone manuelle si Excel est chargé
         if (isExcelLoaded) {
             DOMElements.manualInputContainer.style.opacity = '0.5';
             DOMElements.manualInputContainer.style.pointerEvents = 'none';
@@ -156,22 +127,26 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             DOMElements.manualInputContainer.style.opacity = '1';
             DOMElements.manualInputContainer.style.pointerEvents = 'auto';
-            DOMElements.addCodeInputBtn.style.display = 'flex'; // Utilise flex pour l'icône + texte
+            DOMElements.addCodeInputBtn.style.display = 'flex'; 
         }
     }
 
-    // -------------------------------------------------------------------------
-    // IV. GESTION DE L'IMPORT EXCEL
-    // -------------------------------------------------------------------------
 
-    /**
-     * Lit et parse le fichier Excel (colonne A uniquement).
-     */
+    // =========================================================================
+    // IV. GESTION DE L'IMPORT EXCEL ET DU STATUT
+    // =========================================================================
+
     function handleExcelFile(file) {
+        if (!window.XLSX) {
+            alert("La librairie XLSX (SheetJS) n'est pas chargée.");
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const data = new Uint8Array(e.target.result);
+                // Utilisation du format 'binary' du second code, mais 'array' du premier est souvent préférable
+                const data = new Uint8Array(e.target.result); 
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
@@ -181,9 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let R = 1; ; ++R) {
                     const cellAddress = 'A' + R;
                     const cell = worksheet[cellAddress];
-                    if (!cell) break; // Arrête si la cellule est vide
+                    if (!cell) break; 
 
-                    const value = cell.v ? String(cell.v).trim() : '';
+                    const value = cell && cell.v ? String(cell.v).trim() : '';
                     if (value) {
                         excelCodes.push(value);
                     }
@@ -200,18 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Erreur lors du traitement du fichier Excel:", error);
-                alert("Erreur lors du traitement du fichier Excel. Assurez-vous qu'il est au format .xlsx ou .xls.");
+                alert("Erreur lors du traitement du fichier Excel. Assurez-vous qu'il est au format valide.");
                 clearData();
             }
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(file); // Utilise ArrayBuffer pour XLSX.read({type: 'array'})
     }
-
-    /**
-     * Met à jour la carte de statut après un import/chargement.
-     * @param {number} count - Nombre de codes.
-     * @param {boolean} isExcel - Vrai si les données viennent d'Excel.
-     */
+    
     function updateImportStatus(count, isExcel) {
         const source = isExcel ? 'Import Excel' : 'Saisie Manuelle';
         const rowsPerSheet = parseInt(DOMElements.nbCols.value) * parseInt(DOMElements.nbRows.value);
@@ -222,21 +192,17 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.clearDataBtn.style.display = 'flex';
         toggleManualInputVisibility(isExcel);
 
-        // Si Excel est chargé, désactive l'input file temporairement
         DOMElements.dropZone.style.pointerEvents = isExcel ? 'none' : 'auto';
         DOMElements.dropZone.style.opacity = isExcel ? '0.5' : '1';
     }
 
 
-    /**
-     * Efface toutes les données de codes et réinitialise l'état.
-     */
     function clearData() {
         globalCodeData = [];
         DOMElements.importStatus.style.display = 'none';
         DOMElements.clearDataBtn.style.display = 'none';
         
-        // Réinitialise les inputs manuels à l'état initial (2 champs vides)
+        // Réinitialisation des inputs manuels à l'état initial
         DOMElements.manualInputContainer.innerHTML = `
             <input type="text" class="manual-code-input" data-index="0" placeholder="Code 1">
             <input type="text" class="manual-code-input" data-index="1" placeholder="Code 2">
@@ -246,123 +212,147 @@ document.addEventListener('DOMContentLoaded', () => {
             input.addEventListener('input', generateSheets);
         });
 
-        // Réactive l'import Excel
+        DOMElements.excelInput.value = null; // Vide l'input file
         DOMElements.dropZone.style.pointerEvents = 'auto';
         DOMElements.dropZone.style.opacity = '1';
         toggleManualInputVisibility(false);
 
-        generateSheets(); // Rafraîchit l'aperçu
+        generateSheets(); 
     }
 
-    // Gestion des événements de drag & drop
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        DOMElements.dropZone.addEventListener(eventName, preventDefaults, false);
-    });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        DOMElements.dropZone.addEventListener(eventName, () => DOMElements.dropZone.classList.add('highlight'), false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        DOMElements.dropZone.addEventListener(eventName, () => DOMElements.dropZone.classList.remove('highlight'), false);
-    });
-
-    DOMElements.dropZone.addEventListener('drop', handleDrop, false);
-    DOMElements.excelInput.addEventListener('change', (e) => handleExcelFile(e.target.files[0]));
-    DOMElements.clearDataBtn.addEventListener('click', clearData);
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const file = dt.files[0];
-        if (file) handleExcelFile(file);
-    }
-
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // V. LOGIQUE DE GÉNÉRATION DES CODES ET PLANCHES
-    // -------------------------------------------------------------------------
+    // =========================================================================
 
     /**
      * Met à jour les variables CSS pour l'agencement de la feuille.
      */
     function updateSheetStyles() {
-        const sheet = document.querySelector('.sheet');
-        if (sheet) {
-            sheet.style.setProperty('--mt', DOMElements.marginTop.value + 'mm');
-            sheet.style.setProperty('--ml', DOMElements.marginLeft.value + 'mm');
-            sheet.style.setProperty('--cols', DOMElements.nbCols.value);
-            sheet.style.setProperty('--rows', DOMElements.nbRows.value);
-            sheet.style.setProperty('--lh', DOMElements.rowHeight.value + 'mm');
+        // Applique les styles à TOUTES les feuilles existantes et futures (via le CSS)
+        const root = document.documentElement; 
+        root.style.setProperty('--mt', DOMElements.marginTop.value + 'mm');
+        root.style.setProperty('--ml', DOMElements.marginLeft.value + 'mm');
+        root.style.setProperty('--cols', DOMElements.nbCols.value);
+        root.style.setProperty('--rows', DOMElements.nbRows.value);
+        root.style.setProperty('--lh', DOMElements.rowHeight.value + 'mm');
+    }
+    
+    /**
+     * Génère un SVG de flèche pour les marqueurs d'orientation.
+     * (Logique du second code pour un style de ligne épais)
+     */
+    function createArrowSVG(fullOption) {
+        if (fullOption === 'none' || !fullOption.startsWith('line-')) return null;
+
+        const [, dir] = fullOption.split('-');
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        
+        // Dimensions basées sur le second code
+        svg.setAttribute("width", "10mm");
+        svg.setAttribute("height", "20mm");
+        svg.setAttribute("viewBox", "0 0 100 200");
+        svg.style.marginRight = "5px";
+        svg.style.flexShrink = "0";
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "#000");
+        path.setAttribute("stroke-width", "20"); 
+        path.setAttribute("stroke-linecap", "round");
+
+        let dAttribute = "";
+        if (dir === 'up') {
+            dAttribute = "M 50,180 L 50,20 M 25,50 L 50,20 L 75,50";
+        } else if (dir === 'down') {
+            dAttribute = "M 50,20 L 50,180 M 25,150 L 50,180 L 75,150";
         }
+
+        if (dAttribute) {
+            path.setAttribute("d", dAttribute);
+            svg.appendChild(path);
+            return svg;
+        }
+        return null;
+    }
+
+
+    /**
+     * Calcule le chiffre de contrôle EAN13 (Logique du second code).
+     */
+    function calculCheckDigit(ean12) {
+        let sum = 0;
+        for (let i = 0; i < 12; i++) {
+            // Index pairs * 1, index impairs * 3
+            sum += (i % 2 === 0 ? 1 : 3) * parseInt(ean12[i]); 
+        }
+        const rem = sum % 10;
+        return rem === 0 ? 0 : 10 - rem;
     }
 
     /**
-     * Crée l'élément SVG pour un code-barres.
-     * @param {string} code - Le code à encoder.
-     * @param {string} type - Le type de code (CODE128, EAN13...).
-     * @param {number} scale - Facteur d'échelle.
-     * @returns {string} Le code SVG sous forme de chaîne.
+     * Crée l'élément Canvas pour un QR Code (Logique du premier code).
      */
-    function generateBarcodeSVG(code, type, scale) {
-        const barcodeOptions = {
-            format: type,
-            displayValue: true,
-            margin: 0,
-            width: scale * 2, // Ajustement de la largeur basée sur l'échelle
-            height: scale * 50, // Ajustement de la hauteur basée sur l'échelle
-            textMargin: 5
-        };
-        const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        JsBarcode(svgElement, code, barcodeOptions);
-        return svgElement.outerHTML;
-    }
-
-    /**
-     * Crée l'élément Canvas pour un QR Code.
-     * @param {string} code - Le code à encoder.
-     * @returns {HTMLCanvasElement} L'élément canvas du QR Code.
-     */
-    function generateQRCodeCanvas(code) {
+    function generateQRCodeContent(code, scale) {
         const qrCanvas = document.createElement('canvas');
-        QRCode.toCanvas(qrCanvas, code, {
+        QRCode.toCanvas(qrCanvas, String(code), {
             errorCorrectionLevel: 'H',
             margin: 1,
-            scale: 8 // Gère la densité du QR Code
+            // Utilisation du scale de l'input pour ajuster la taille
+            width: 100 * scale 
         });
         return qrCanvas;
     }
 
     /**
-     * Génère une cellule complète avec le code et ses options.
-     * @param {string} code - Le code à traiter.
-     * @param {string} type - Type de code.
-     * @param {number} scale - Échelle.
-     * @param {string} arrowOption - Option de flèche.
-     * @returns {HTMLElement} L'élément div de la cellule de code.
+     * Crée l'élément SVG pour un code-barres (Logique du premier code, ajustée).
      */
-    function createBarcodeCell(code, type, scale, arrowOption) {
+    function generateBarcodeSVGContent(code, type, scale) {
+        const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        
+        let codeText = String(code);
+        if (type === 'EAN13' && codeText.length === 12) {
+            codeText += calculCheckDigit(codeText.replace(/\D/g, "").substring(0, 12));
+        }
+
+        JsBarcode(svgElement, codeText, {
+            format: type,
+            displayValue: true,
+            margin: 5, // Marge nécessaire pour le texte et pour éviter de toucher les bords
+            width: 2 * scale, // Ajustement de la largeur basée sur l'échelle
+            height: 50 * scale, // Ajustement de la hauteur basée sur l'échelle
+            textMargin: 5
+        });
+        return svgElement;
+    }
+    
+    /**
+     * Génère une cellule complète.
+     */
+    function createBarcodeCell(code, type, scale, arrowOption, isDemo) {
         const cell = document.createElement('div');
         cell.className = 'barcode-cell';
+        if (isDemo) cell.style.opacity = "0.3";
 
-        if (arrowOption !== 'none') {
-            const arrowDiv = document.createElement('div');
-            arrowDiv.className = `arrow-marker ${arrowOption}`;
-            cell.appendChild(arrowDiv);
+        // Ajout de la flèche
+        const arrowContent = createArrowSVG(arrowOption);
+        if (arrowContent) {
+            cell.appendChild(arrowContent);
         }
 
-        if (type === 'QRCODE') {
-            const qrCanvas = generateQRCodeCanvas(code);
-            cell.appendChild(qrCanvas);
-        } else {
-            const svgString = generateBarcodeSVG(code, type, scale);
-            // Insère directement le SVG. Le style (taille) sera géré par la cellule via le scale
-            cell.innerHTML += svgString;
+        try {
+            let element;
+            if (type === 'QRCODE') {
+                element = generateQRCodeContent(code, scale);
+            } else {
+                element = generateBarcodeSVGContent(code, type, scale);
+            }
+            cell.appendChild(element);
+        } catch (e) {
+            cell.textContent = `Erreur: ${e.message.substring(0, 30)}...`;
+            cell.style.color = "red";
+            cell.style.fontSize = "0.7rem";
         }
-
         return cell;
     }
 
@@ -381,47 +371,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Déterminer la source des données
         let codes;
-        if (globalCodeData.length > 0) {
+        let isExcelSource = globalCodeData.length > 0;
+        let isDemo = false;
+
+        if (isExcelSource) {
             codes = globalCodeData;
-            // Mise à jour du statut avec les données Excel (si on régénère)
             updateImportStatus(codes.length, true);
         } else {
             codes = getManualCodes();
-            // Mise à jour du statut avec les données Manuelles (si on régénère)
-            if (codes.length > 0) {
-                 updateImportStatus(codes.length, false);
-            } else {
+            if (codes.length === 0) {
+                 // Si pas de données, utiliser un exemple (logique du second code)
+                codes = ["EXEMPLE-1", "EXEMPLE-2", "EXEMPLE-3", "EXEMPLE-4", "EXEMPLE-5", "EXEMPLE-6", "EXEMPLE-7", "EXEMPLE-8"];
+                isDemo = true;
                 DOMElements.importStatus.style.display = 'none';
                 DOMElements.clearDataBtn.style.display = 'none';
+            } else {
+                updateImportStatus(codes.length, false);
             }
         }
         
-        // Mettre à jour les variables CSS pour la grille (marges, lignes, colonnes)
         updateSheetStyles();
 
         // 2. Préparation de l'aperçu
         DOMElements.sheetLayer.innerHTML = '';
         
-        if (codes.length === 0) {
+        if (codes.length === 0 && !isDemo) {
+             // Message si vraiment vide (ne devrait arriver qu'après un Clear si l'exemple n'est pas utilisé)
             DOMElements.sheetLayer.innerHTML = `<div id="pageSheet" class="sheet">
                 <div id="gridContainer" class="grid-container">
-                    <div class="barcode-cell" style="color:#aaa; font-size:0.8rem;">
-                        (Zone d'aperçu - Importez un fichier ou saisissez des codes)
+                    <div class="barcode-cell" style="color:#aaa; font-size:0.8rem; grid-column: 1 / -1; align-self: center; justify-self: center;">
+                        (Zone d'aperçu - Importez un fichier Excel ou saisissez des codes)
                     </div>
                 </div>
             </div>`;
             return;
         }
 
-
-        // 3. Génération des planches
+        // 3. Génération des planches (Logique Multi-pages du second code)
         let codeIndex = 0;
         let sheetCount = Math.ceil(codes.length / cellsPerSheet);
 
         for (let s = 0; s < sheetCount; s++) {
             const currentSheet = document.createElement('div');
             currentSheet.className = 'sheet';
-            currentSheet.id = `pageSheet_${s}`; // ID pour l'impression/téléchargement
+            currentSheet.id = `pageSheet_${s}`; 
 
             const currentGrid = document.createElement('div');
             currentGrid.className = 'grid-container';
@@ -430,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < cellsPerSheet; i++) {
                 if (codeIndex < codes.length) {
                     const code = codes[codeIndex];
-                    const cell = createBarcodeCell(code, codeType, codeScale, arrowOption);
+                    const cell = createBarcodeCell(code, codeType, codeScale, arrowOption, isDemo);
                     currentGrid.appendChild(cell);
                     codeIndex++;
                 } else {
@@ -444,74 +437,102 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSheet.appendChild(currentGrid);
             DOMElements.sheetLayer.appendChild(currentSheet);
         }
+        
+        // Mise à jour de la référence du gridContainer de la première page si nécessaire
+        DOMElements.gridContainer = DOMElements.sheetLayer.querySelector('.grid-container'); 
+        
+        // Mise à jour du statut des codes (sauf en mode démo)
+        if (!isDemo && (isExcelSource || codes.length > 0)) {
+             updateImportStatus(codes.length, isExcelSource);
+        }
     }
 
 
-    // -------------------------------------------------------------------------
-    // VI. TÉLÉCHARGEMENT PDF (Logique avancée avec jsPDF et html2canvas)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // VI. TÉLÉCHARGEMENT PDF (Logique multi-pages avec progression)
+    // =========================================================================
 
-    /**
-     * Génère et télécharge le PDF à partir de l'aperçu HTML.
-     */
     async function generatePDF() {
-        DOMElements.downloadBtn.disabled = true;
-        DOMElements.downloadBtn.textContent = 'Génération en cours...';
-
-        const sheets = document.querySelectorAll('.sheet');
-        if (sheets.length === 0) {
-            alert("Aucune planche à télécharger.");
-            DOMElements.downloadBtn.disabled = false;
-            DOMElements.downloadBtn.textContent = 'Télécharger le PDF';
+        if (!window.jspdf || !window.html2canvas) {
+            alert("Les librairies jsPDF et/ou html2canvas ne sont pas chargées. Impossible de générer le PDF.");
+            return;
+        }
+        
+        if (globalCodeData.length === 0 && getManualCodes().length === 0) {
+            alert("Aucune donnée chargée pour générer un PDF.");
             return;
         }
 
-        const doc = new window.jspdf.jsPDF({
-            unit: 'mm',
-            format: 'a4',
-            orientation: 'p'
-        });
+        DOMElements.downloadBtn.disabled = true;
+        DOMElements.downloadBtn.textContent = 'Génération en cours...';
 
-        // Largeur/Hauteur de l'A4 en mm
+        // 1. Mise en place de l'environnement de capture (Logique du second code)
+        const originalTransform = DOMElements.sheetLayer.style.transform;
+        const originalBoxShadow = DOMElements.sheetLayer.style.boxShadow;
+
+        // Réinitialiser le zoom/ombre pour la capture
+        DOMElements.sheetLayer.style.transform = "scale(1)";
+        DOMElements.sheetLayer.style.boxShadow = "none";
+        
+        // Assurez-vous que les codes sont générés avant la capture
+        generateSheets();
+
+        const sheets = DOMElements.sheetLayer.querySelectorAll('.sheet');
+        if (sheets.length === 0) {
+            DOMElements.downloadBtn.textContent = 'Télécharger le PDF';
+            DOMElements.downloadBtn.disabled = false;
+            return;
+        }
+        
+        // 2. Initialisation de jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+
         const pdfWidth = 210;
-        const pdfHeight = 297; 
+        const pdfHeight = 297;
 
-        for (let i = 0; i < sheets.length; i++) {
-            const sheet = sheets[i];
+        let pageIndex = 1;
+        const totalSheets = sheets.length;
 
-            // 1. Génération de l'image (Canvas)
+        for (const sheet of sheets) {
+            // *** MISE À JOUR DE LA PROGRESSION *** (Logique du second code)
+            DOMElements.downloadBtn.textContent = `Génération en cours... Page ${pageIndex} / ${totalSheets}`;
+
+            if (pageIndex > 1) {
+                pdf.addPage();
+            }
+
+            // 3. Capturer la feuille avec html2canvas (Scale: 2 pour l'optimisation)
             const canvas = await html2canvas(sheet, {
-                scale: 3, // Haute résolution pour le PDF
+                scale: 2, 
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#FFFFFF'
             });
 
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            // 4. Ajouter la capture au PDF
+            const imgData = canvas.toDataURL('image/png');
 
-            if (i > 0) {
-                doc.addPage();
-            }
-            
-            // 2. Ajout de l'image au PDF
-            // L'image est étirée aux dimensions A4
-            doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+            pageIndex++;
         }
 
-        doc.save(`planche_codebarres_${new Date().toISOString().slice(0, 10)}.pdf`);
-        
-        DOMElements.downloadBtn.disabled = false;
+        // 5. Téléchargement du fichier
+        pdf.save('planche_etiquettes_multi-pages.pdf');
+
+        // 6. Restauration de l'affichage et du bouton
+        DOMElements.sheetLayer.style.transform = originalTransform;
+        DOMElements.sheetLayer.style.boxShadow = originalBoxShadow;
         DOMElements.downloadBtn.textContent = 'Télécharger le PDF';
+        DOMElements.downloadBtn.disabled = false;
     }
 
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // VII. GESTION DU ZOOM DE L'APERÇU
-    // -------------------------------------------------------------------------
+    // =========================================================================
     
-    /**
-     * Met à jour le facteur de zoom de l'aperçu.
-     */
     function updateZoom() {
         const zoomValue = DOMElements.zoomSlider.value;
         DOMElements.sheetLayer.style.transform = `scale(${zoomValue})`;
@@ -519,24 +540,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // VIII. GESTION DE LA MODALE D'AIDE
-    // -------------------------------------------------------------------------
+    // =========================================================================
 
     function openModal() {
-        DOMElements.helpModal.classList.add('open');
+        if (DOMElements.helpModal) DOMElements.helpModal.classList.add('open');
     }
 
     function closeModal() {
-        DOMElements.helpModal.classList.remove('open');
+        if (DOMElements.helpModal) DOMElements.helpModal.classList.remove('open');
     }
 
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // IX. ÉCOUTEURS D'ÉVÉNEMENTS
-    // -------------------------------------------------------------------------
+    // =========================================================================
     
-    // Contrôles qui déclenchent la régénération
+    // 1. Contrôles de Grille/Code qui déclenchent la régénération
     [
         DOMElements.codeType, 
         DOMElements.codeScale,
@@ -546,21 +567,63 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.nbRows, 
         DOMElements.rowHeight,
         DOMElements.arrowOption
-    ].forEach(element => element.addEventListener('input', generateSheets));
+    ].forEach(element => element.addEventListener('input', () => {
+        // Déselectionne le preset si un champ de dimension est modifié manuellement
+        if (element.id !== 'codeType' && element.id !== 'codeScale' && element.id !== 'arrowOption') {
+            DOMElements.gridPresetSelect.value = 'perso';
+        }
+        updateSheetStyles();
+        generateSheets();
+    }));
 
     DOMElements.gridPresetSelect.addEventListener('change', (e) => {
         applyPreset(e.target.value);
-        // Réinitialise à la valeur "Personnalisé" après l'application du preset pour permettre des ajustements manuels
+        // Réinitialise à 'Personnalisé' pour permettre l'édition manuelle après l'application
         DOMElements.gridPresetSelect.value = 'perso'; 
     });
 
+    // 2. Saisie Manuelle (Initialisation)
+    DOMElements.manualInputContainer.querySelectorAll('.manual-code-input').forEach(input => {
+        input.addEventListener('input', generateSheets);
+    });
+    DOMElements.addCodeInputBtn.addEventListener('click', () => {
+        createNewCodeInput();
+        const lastInput = DOMElements.manualInputContainer.lastElementChild;
+        if (lastInput) lastInput.focus();
+    });
 
-    // Zoom et Téléchargement
+    // 3. Import Excel (Drag & Drop / Fichier)
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    function handleDrop(e) {
+        preventDefaults(e);
+        DOMElements.dropZone.classList.remove('highlight');
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        if (file) handleExcelFile(file);
+    }
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        DOMElements.dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    ['dragenter', 'dragover'].forEach(eventName => {
+        DOMElements.dropZone.addEventListener(eventName, () => DOMElements.dropZone.classList.add('highlight'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        DOMElements.dropZone.addEventListener(eventName, () => DOMElements.dropZone.classList.remove('highlight'), false);
+    });
+    DOMElements.dropZone.addEventListener('drop', handleDrop, false);
+    DOMElements.excelInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleExcelFile(e.target.files[0]);
+    });
+    DOMElements.clearDataBtn.addEventListener('click', clearData);
+
+
+    // 4. Zoom et Téléchargement
     DOMElements.zoomSlider.addEventListener('input', updateZoom);
     DOMElements.downloadBtn.addEventListener('click', generatePDF);
 
 
-    // Modale
+    // 5. Modale d'aide
     DOMElements.helpButton.addEventListener('click', openModal);
     DOMElements.closeModalBtn.addEventListener('click', closeModal);
     window.addEventListener('click', (e) => {
@@ -568,11 +631,16 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }
     });
+    document.addEventListener('keydown', (e) => {
+         if (e.key === 'Escape' && DOMElements.helpModal && DOMElements.helpModal.classList.contains('open')) {
+            closeModal();
+        }
+    });
 
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // X. INITIALISATION
-    // -------------------------------------------------------------------------
+    // =========================================================================
 
     // 1. Remplir les presets
     populatePresets();
@@ -580,7 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Appliquer le zoom initial
     updateZoom();
 
-    // 3. Générer l'aperçu initial (doit afficher le message d'attente)
+    // 3. Appliquer les styles CSS initiaux
+    updateSheetStyles();
+
+    // 4. Générer l'aperçu initial (doit afficher l'exemple)
     generateSheets(); 
 
 }); // Fin de DOMContentLoaded
