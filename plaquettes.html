@@ -1,146 +1,148 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GenCodeBarres V2.3 - Générateur d'Étiquettes Multipage</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>GenCodeBarres v2.3 - Planches</title>
+    <meta name="theme-color" content="#0f172a">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <link rel="stylesheet" href="plaquettes.css">
+    
 </head>
+
 <body>
 
-    <button id="helpButton" class="help-btn" title="Aide et Instructions">?</button>
+    <button id="helpButton" class="action-btn help-btn" title="Aide et informations">
+        <i class="fas fa-circle-info"></i>
+    </button>
 
-    <div class="sidebar">
+    <aside class="sidebar">
         <div class="sidebar-header">
-            <h1 class="app-title">GenCodeBarres <span style="font-size: 0.7em; opacity: 0.6;">v2.3</span></h1>
+            <div class="app-title">GenCodeBarres<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.3</span></div>
         </div>
 
         <div class="sidebar-content">
-            
+
             <div class="tabs-nav">
-                <button class="tab-btn" onclick="window.location.href='https://mikefri.github.io/GenCodeBarre/'">Création</button> 
-                <button class="tab-btn active" id="btn-tab-planches" data-target="tab-tools">Planches</button>
+                <button class="tab-btn" onclick="window.location.href='https://mikefri.github.io/GenCodeBarre/'">Création</button>
+                <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Planches</button>
             </div>
 
-
             <div class="control-group">
-                <label>1. Source de Données</label>
-                
-                <textarea id="manualInput" placeholder="Saisir vos codes ici (un code par ligne)..." rows="5"></textarea>
-
-                <label style="text-align: center; margin: 10px 0; font-style: italic; opacity: 0.8;">OU</label>
-
+                <label>1. Source de Données (Excel)</label>
                 <label class="drop-zone" id="dropZone">
                     <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
                     <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
                     <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
                 </label>
 
-                <div id="importStatus" class="status-card">
-                    <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Données chargées</div>
+                <div id="importStatus" class="status-card" style="display:none;">
+                    <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
                     <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
                 </div>
 
                 <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer les données</button>
             </div>
 
-            <hr class="divider">
+            <div class="divider"></div>
 
             <div class="control-group">
-                <label>2. Configuration du Code</label>
+                <label>2. Type de Code</label>
+                <select id="codeType">
+                    <option value="CODE128">Code 128</option>
+                    <option value="EAN13">EAN-13</option>
+                    <option value="QRCODE">QR Code</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Échelle Code</label>
+                <input type="number" id="codeScale" value="1.5" step="0.1" min="0.5" max="3">
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="control-group">
+                <label>3. Configuration Planches</label>
+
+                <select id="gridPresetSelect" style="margin-bottom: 10px;">
+                    <option value="" selected disabled>Sélectionner un Modèle prédéfini...</option>
+                    </select>
                 <div class="grid-settings">
                     <div class="grid-row">
                         <div class="grid-col">
-                            <label for="codeType">Type de Code</label>
-                            <select id="codeType">
-                                <option value="CODE128">Code 128</option>
-                                <option value="EAN13">EAN-13</option>
-                                <option value="QRCODE">QR Code</option>
-                            </select>
+                            <label>Marge Haut (mm)</label>
+                            <input type="number" id="marginTop" value="4.5" step="0.5">
                         </div>
                         <div class="grid-col">
-                            <label for="codeScale">Échelle / Taille</label>
-                            <input type="number" id="codeScale" min="0.5" max="5" step="0.1" value="1.5">
+                            <label>Marge G (mm)</label>
+                            <input type="number" id="marginLeft" value="5" step="0.5">
                         </div>
                     </div>
-                    <div class="grid-col">
-                        <label for="arrowOption">Ajouter une flèche (Optionnel)</label>
-                        <select id="arrowOption">
-                            <option value="none">Aucune</option>
-                            <option value="line-up">Flèche Haut</option>
-                            <option value="line-down">Flèche Bas</option>
-                        </select>
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <label>Colonnes</label>
+                            <input type="number" id="nbCols" value="3">
+                        </div>
+                        <div class="grid-col">
+                            <label>Lignes</label>
+                            <input type="number" id="nbRows" value="8">
+                        </div>
+                    </div>
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <label>H. Étiquette (mm)</label>
+                            <input type="number" id="rowHeight" value="36">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <hr class="divider">
-
             <div class="control-group">
-                <label>3. Configuration de la Planche (mm)</label>
-                <div class="grid-settings">
-                    
-                    <div class="grid-col">
-                        <label for="gridPresetSelect">Presets (Modèles Courants)</label>
-                        <select id="gridPresetSelect">
-                            <option value="">-- Personnalisé --</option>
-                            </select>
-                    </div>
-
-                    <div class="grid-row">
-                        <div class="grid-col">
-                            <label for="marginTop">Marge Haut (mm)</label>
-                            <input type="number" id="marginTop" min="0" max="100" step="0.5" value="4.5">
-                        </div>
-                        <div class="grid-col">
-                            <label for="marginLeft">Marge Côté (mm)</label>
-                            <input type="number" id="marginLeft" min="0" max="100" step="0.5" value="5">
-                        </div>
-                    </div>
-                    <div class="grid-row">
-                        <div class="grid-col">
-                            <label for="nbCols">Nb. Cols</label>
-                            <input type="number" id="nbCols" min="1" max="10" step="1" value="3">
-                        </div>
-                        <div class="grid-col">
-                            <label for="nbRows">Nb. Lignes</label>
-                            <input type="number" id="nbRows" min="1" max="50" step="1" value="8">
-                        </div>
-                    </div>
-                    <div class="grid-row">
-                        <div class="grid-col">
-                            <label for="rowHeight">Hauteur Ligne (mm)</label>
-                            <input type="number" id="rowHeight" min="10" max="250" step="0.5" value="36">
-                        </div>
-                    </div>
-
-                </div>
+                <label>4. Option Flèche latérale</label>
+                <select id="arrowOption" style="margin-bottom: 10px;">
+                    <option value="none">Aucune</option>
+                    <option value="line-up">↑ Vers le Haut </option>
+                    <option value="line-down">↓ Vers le Bas </option>
+                </select>
             </div>
-
+            
         </div>
 
         <div class="sidebar-footer">
-            <button id="downloadBtn" class="action-btn btn-print">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                Télécharger le PDF
-            </button>
+            <button class="action-btn btn-print" onclick="window.print()">Imprimer toutes les Planches</button>
+            <button class="action-btn btn-download" id="downloadBtn">Télécharger le PDF</button>
         </div>
-    </div>
-    
+    </aside>
+
     <main class="main-content">
 
         <div class="toolbar-preview">
             <span>Zoom Aperçu</span>
-            <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.70">
-            <span id="zoomValue">70%</span> 
+            <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.7">
+            <span id="zoomValue">70%</span>
         </div>
 
         <div class="preview-scroll-wrapper">
-            <div id="sheetLayer" class="sheet-transform-layer">
+            <div class="sheet-transform-layer" id="sheetLayer" style="transform: scale(0.7);">
                 <div id="pageSheet" class="sheet">
                     <div id="gridContainer" class="grid-container">
+                        <div class="barcode-cell" style="color:#aaa; font-size:0.8rem;">
+                            (Zone d'aperçu - Importez un fichier)
                         </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -149,49 +151,29 @@
     <div id="helpModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>❓ Instructions & Aide</h3>
-                <button id="closeModalBtn" class="close-btn">&times;</button>
+                <h3>❓ Guide d'utilisation GenCodeBarre v2.3</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <h4>1. Source de Données</h4>
+                <h4>📂 Onglet Planches</h4>
+                <p>Cet onglet vous permet d'importer une liste de codes depuis un fichier Excel (.xlsx) afin de générer une ou plusieurs planche(s) complète(s) en une seule fois.</p>
                 <ul>
-                    <li>**Saisie Manuelle :** Entrez simplement vos codes (numériques ou alphanumériques) un par ligne dans la zone de texte.</li>
-                    <li>**Import Excel :** Cliquez ou glissez-déposez un fichier `.xlsx` ou `.xls`. Seule la **Colonne A** (la première colonne) sera lue. Les codes doivent être présents dans cette colonne, sans en-tête.</li>
-                    <li>*Priorité :* Si un fichier Excel est chargé, la saisie manuelle est désactivée. Cliquez sur "Effacer les données" pour réactiver la saisie manuelle.</li>
+                    <li>Source de Données (Excel) : Assurez-vous que tous vos codes sont listés dans la colonne A du fichier Excel.</li>
+                    <li>Type de Code : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
+                    <li>Configuration Grille : Sélectionnez le type de planche que vous souhaitez (ou personnalisez les dimensions).</li>
+                    <li>Option Flèche latérale : Vous avez la possibilité d'ajouter une flèche d'orientation sur la partie gauche du code-barres.</li>
                 </ul>
-
-                <h4>2. Configuration du Code</h4>
-                <ul>
-                    <li>**Type :** Choisissez entre Code 128, EAN-13, ou QR Code.
-                        <ul>
-                            <li>*EAN-13 :* Si vous entrez un code à 12 chiffres, le 13ème chiffre (clé de contrôle) est calculé automatiquement.</li>
-                        </ul>
-                    </li>
-                    <li>**Échelle / Taille :** Ajustez la densité du code (largeur des barres pour les codes-barres, taille du QR Code).</li>
-                    <li>**Flèche :** Pour des applications spécifiques (ex: orientation de pose), vous pouvez ajouter une flèche de direction.</li>
-                </ul>
-                
-                <h4>3. Configuration de la Planche</h4>
-                <ul>
-                    <li>**Presets :** Utilisez les modèles prédéfinis (par exemple, des formats Avery ou standards). Sélectionner un preset met à jour toutes les marges et dimensions.</li>
-                    <li>**Dimensions (mm) :** Ajustez précisément les marges et les dimensions des étiquettes (nombre de colonnes, lignes et hauteur de ligne) en millimètres.</li>
-                </ul>
-
-                <h4>Aperçu et Export</h4>
-                <ul>
-                    <li>L'aperçu montre exactement ce qui sera imprimé. Utilisez le slider en haut pour zoomer.</li>
-                    <li>Cliquez sur **Télécharger le PDF** pour générer un document multi-pages prêt à être imprimé. Chaque page du PDF correspond à une planche A4.</li>
-                </ul>
+                <hr class="divider">
+                <h4>📚 Documentation Complète</h4>
+                <a href="https://mikefri.github.io/GenCodeBarre/README.md" target="_blank" class="btn-documentation">
+                    Consulter le README complet ↗
+                </a>
             </div>
         </div>
     </div>
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="plaquettes.js"></script>
+    
+    <script src="plaquettes.js" defer></script>
+    
 </body>
+
 </html>
