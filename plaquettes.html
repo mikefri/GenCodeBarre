@@ -19,7 +19,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <link rel="stylesheet" href="plaquettes.css">
-    
 </head>
 
 <body>
@@ -39,46 +38,16 @@
                 <button class="tab-btn" onclick="window.location.href='https://mikefri.github.io/GenCodeBarre/'">Création</button>
                 <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Planches</button>
             </div>
-
+            
             <div class="control-group">
-                <label>1. Saisie des Codes (Manuel)</label>
-                
-                <div id="manualInputContainer" class="input-list-container">
-                    <input type="text" class="manual-code-input" data-index="0" placeholder="Code 1">
-                    <input type="text" class="manual-code-input" data-index="1" placeholder="Code 2">
-                </div>
-
-                <button id="addCodeInputBtn" class="action-btn btn-secondary" style="margin-bottom: 10px;">
-                    <i class="fas fa-plus"></i> Ajouter un code
-                </button>
-                
-                <label style="text-align: center; margin: 10px 0; font-style: italic; opacity: 0.8; font-size: 0.75rem;">OU IMPORTER</label>
-                
-                <label class="drop-zone" id="dropZone">
-                    <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
-                    <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
-                    <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
-                </label>
-
-                <div id="importStatus" class="status-card" style="display:none;">
-                    <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
-                    <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
-                </div>
-
-                <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer les données</button>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="control-group">
-                <label>2. Type de Code</label>
+                <label>1. Type de Code</label>
                 <select id="codeType">
                     <option value="CODE128">Code 128</option>
                     <option value="EAN13">EAN-13</option>
                     <option value="QRCODE">QR Code</option>
                 </select>
             </div>
-            
+
             <div class="control-group">
                 <label>Échelle Code</label>
                 <input type="number" id="codeScale" value="1.5" step="0.1" min="0.5" max="3">
@@ -87,11 +56,11 @@
             <div class="divider"></div>
 
             <div class="control-group">
-                <label>3. Configuration Planches</label>
+                <label>2. Configuration Planches</label>
 
                 <select id="gridPresetSelect" style="margin-bottom: 10px;">
-                    <option value="" selected disabled>Sélectionner un Modèle prédéfini...</option>
-                    </select>
+                    <option value="perso">Personnalisé</option>
+                </select>
                 <div class="grid-settings">
                     <div class="grid-row">
                         <div class="grid-col">
@@ -123,14 +92,13 @@
             </div>
 
             <div class="control-group">
-                <label>4. Option Flèche latérale</label>
+                <label>3. Option Flèche latérale</label>
                 <select id="arrowOption" style="margin-bottom: 10px;">
                     <option value="none">Aucune</option>
                     <option value="line-up">↑ Vers le Haut </option>
                     <option value="line-down">↓ Vers le Bas </option>
                 </select>
             </div>
-            
         </div>
 
         <div class="sidebar-footer">
@@ -142,7 +110,11 @@
     <main class="main-content">
 
         <div class="toolbar-preview">
-            <span>Zoom Aperçu</span>
+            <button id="openSidebarBtn" class="action-btn" title="Gérer les codes et l'import">
+                <i class="fas fa-barcode"></i> Codes & Import
+            </button>
+            
+            <div style="flex-grow: 1;"></div> <span>Zoom Aperçu</span>
             <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.7">
             <span id="zoomValue">70%</span>
         </div>
@@ -159,6 +131,36 @@
             </div>
         </div>
     </main>
+    
+    <aside id="codeSidebar" class="sliding-sidebar">
+        <div class="sidebar-header">
+            <h3>Codes & Import</h3>
+            <button id="closeSidebarBtn" class="close-btn"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="control-group">
+                <label>1. Saisie Manuelle (un code par ligne)</label>
+                <textarea id="manualTextarea" rows="10" placeholder="Collez vos codes ici (un code par ligne). Les codes manuels sont prioritaires si l'import Excel est vide."></textarea>
+            </div>
+
+            <label style="text-align: center; margin: 10px 0; font-style: italic; opacity: 0.8; font-size: 0.75rem;">OU IMPORTER</label>
+
+            <label class="drop-zone" id="dropZone">
+                <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
+                <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
+                <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
+            </label>
+
+            <div id="importStatus" class="status-card" style="display:none;">
+                <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
+                <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
+            </div>
+
+            <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer les données</button>
+
+        </div>
+    </aside>
 
     <div id="helpModal" class="modal-overlay">
         <div class="modal-content">
@@ -183,9 +185,9 @@
             </div>
         </div>
     </div>
-    
+
     <script src="plaquettes.js" defer></script>
-    
+
 </body>
 
 </html>
