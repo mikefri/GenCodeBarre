@@ -46,16 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Définitions des formats de planches courants (Presets) - FUSION DES DEUX LISTES
     // NOTE: Le second code utilisait un tableau `gridPresets`, nous allons harmoniser en utilisant l'objet du premier code pour la clé (plus simple à gérer).
     const GRID_PRESETS = {
-        'perso': { name: 'Personnalisé', mt: 4.5, ml: 5, cols: 3, rows: 8, lh: 36 },
-        'avery_l7160': { name: 'Avery L7160 (65 étiquettes)', mt: 11.7, ml: 8.5, cols: 5, rows: 13, lh: 26.7 },
-        'avery_j8163': { name: 'Avery J8163 (14 étiquettes)', mt: 9.9, ml: 10, cols: 2, rows: 7, lh: 42.4 },
-        'avery_l7120': { name: 'Avery L7120 (10 étiquettes)', mt: 10, ml: 10, cols: 1, rows: 10, lh: 59.4 },
         
-        // Ajout des presets spécifiques du second code sous des clés uniques
         'planche_24': { name: 'Planche de 24 (70x36)', mt: 3.5, ml: 0, cols: 3, rows: 8, lh: 36 },
         'planche_4': { name: 'Planche de 4 (210x74)', mt: 0, ml: 0, cols: 1, rows: 4, lh: 74 },
-        'petites_etiquettes': { name: 'Petites Étiquettes (4x10)', mt: 5, ml: 5, cols: 4, rows: 10, lh: 25 },
-        'tres_grandes': { name: 'Très Grandes (2x2)', mt: 15, ml: 15, cols: 2, rows: 2, lh: 120 },
     };
 
 
