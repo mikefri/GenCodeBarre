@@ -36,9 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- TES PRESETS RÉINSTALLÉS ---
     const gridPresets = [
         { name: "Planche de 24 70x36", marginTop: 3.5, marginLeft: 0, nbCols: 3, nbRows: 8, rowHeight: 36 },
-        { name: "Planche de 4 210x74", marginTop: 0, marginLeft: 0, nbCols: 1, nbRows: 4, rowHeight: 74 },
-        { name: "Petites Étiquettes (4x10)", marginTop: 5, marginLeft: 5, nbCols: 4, nbRows: 10, rowHeight: 25 },
-        { name: "Très Grandes (2x2)", marginTop: 15, marginLeft: 15, nbCols: 2, nbRows: 2, rowHeight: 120 }
+        { name: "Planche de 4 210x74", marginTop: 0, marginLeft: 0, nbCols: 1, nbRows: 4, rowHeight: 74 }
     ];
 
     // --- LOGIQUE MANUELLE ---
