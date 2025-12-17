@@ -549,3 +549,43 @@
     color: var(--text-secondary);
     opacity: 0.5;
 }
+
+/* Conteneur pour aligner Input + Bouton supprimer */
+.input-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.input-list-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.manual-code-input {
+    flex: 1; /* L'input prend toute la place restante */
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-app);
+    color: #fff;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+/* Petit bouton de suppression discret */
+.remove-code-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: none;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.remove-code-btn:hover {
+    background: var(--danger);
+    color: white;
+}
