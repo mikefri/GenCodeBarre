@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- MISE À JOUR DE L'OBJET REFS AVEC TOUS LES ÉLÉMENTS (INCLUANT helpButton) ---
+    // --- MISE À JOUR DE L'OBJET REFS ---
     const refs = {
         excelInput: document.getElementById('excelInput'),
         dropZone: document.getElementById('dropZone'),
@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomSlider: document.getElementById('zoomSlider'),
         zoomValue: document.getElementById('zoomValue'),
 
+        // NOUVEAU: Références pour la saisie manuelle
+        manualContainer: document.getElementById('manualInputContainer'),
+        addCodeBtn: document.getElementById('addCodeInputBtn'),
+
         // Inputs Config
         codeType: document.getElementById('codeType'),
         marginTop: document.getElementById('marginTop'),
@@ -28,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gridPresetSelect: document.getElementById('gridPresetSelect'),
         arrowOption: document.getElementById('arrowOption'),
 
-        // ✅ RÉFÉRENCES MODALE (helpButton est de retour)
+        // RÉFÉRENCES MODALE
         helpModal: document.getElementById('helpModal'),
         helpButton: document.getElementById('helpButton'), 
         closeModalBtn: document.getElementById('closeModalBtn')
@@ -36,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let appData = []; // Stockage des codes
 
-    // --- DÉFINITION DES PRESETS DE GRILLE ---
+    // --- DÉFINITION DES PRESETS DE GRILLE (INCHANGÉ) ---
     const gridPresets = [
         {
             name: "Planche de 24 70x36",
@@ -71,23 +75,61 @@ document.addEventListener('DOMContentLoaded', () => {
             rowHeight: 120,
         }
     ];
-    // --- FIN PRESETS ---
+
+    // --- LOGIQUE DE SAISIE MANUELLE ---
+
+    // Synchronise le contenu des inputs vers appData et relance le rendu
+    function syncManualInputs() {
+        const inputs = document.querySelectorAll('.manual-code-input');
+        appData = Array.from(inputs)
+            .map(input => input.value.trim())
+            .filter(val => val !== ""); // On ignore les champs vides
+        
+        renderBarcodes();
+    }
+
+    // Crée une ligne d'input avec son bouton supprimer
+    function createInputRow(value = "") {
+        const row = document.createElement('div');
+        row.className = 'input-row';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'manual-code-input';
+        input.value = value;
+        input.placeholder = "Entrez un code...";
+        input.addEventListener('input', syncManualInputs);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-code-btn';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.title = "Supprimer";
+        removeBtn.onclick = () => {
+            row.remove();
+            syncManualInputs();
+        };
+
+        row.appendChild(input);
+        row.appendChild(removeBtn);
+        refs.manualContainer.appendChild(row);
+    }
+
+    // Écouteur pour le bouton "+"
+    if (refs.addCodeBtn) {
+        refs.addCodeBtn.addEventListener('click', () => createInputRow());
+    }
 
     // --- GESTION DU ZOOM ---
-refs.zoomSlider.addEventListener('input', (e) => {
-        const scale = parseFloat(e.target.value);
-        // 1. Mettre à jour l'échelle visuelle
-        refs.sheetLayer.style.transform = `scale(${scale})`;
-
-        // 2. Mettre à jour le pourcentage affiché
-        const percentage = Math.round(scale * 100);
-        refs.zoomValue.textContent = `${percentage}%`;
-    });
+    refs.zoomSlider.addEventListener('input', (e) => {
+        const scale = parseFloat(e.target.value);
+        refs.sheetLayer.style.transform = `scale(${scale})`;
+        const percentage = Math.round(scale * 100);
+        refs.zoomValue.textContent = `${percentage}%`;
+    });
 
     // --- MISE A JOUR CSS GRILLE ---
     function updateSheetCSS(sheetElement) {
         const style = sheetElement.style;
-
         style.setProperty('--mt', refs.marginTop.value + 'mm');
         style.setProperty('--ml', refs.marginLeft.value + 'mm');
         style.setProperty('--cols', refs.nbCols.value);
@@ -121,38 +163,24 @@ refs.zoomSlider.addEventListener('input', (e) => {
 
     refs.gridPresetSelect.addEventListener('change', (e) => {
         const selectedIndex = e.target.value;
-
-        if (selectedIndex === "" || selectedIndex === null) {
-            return;
-        }
+        if (selectedIndex === "" || selectedIndex === null) return;
 
         const preset = gridPresets[selectedIndex];
-
-        // 1. Appliquer les valeurs aux champs de configuration
         refs.marginTop.value = preset.marginTop;
         refs.marginLeft.value = preset.marginLeft;
         refs.nbCols.value = preset.nbCols;
         refs.nbRows.value = preset.nbRows;
         refs.rowHeight.value = preset.rowHeight;
 
-        // 2. Mettre à jour la grille visuelle
         updateGridCSS();
         renderBarcodes();
     });
-    // --- FIN PRESETS LOGIQUE ---
 
-    // ---------------------------------------------
-    // --- CRÉATION DU SVG DE FLÈCHE (LIGNE ÉPAISSE) ---
-    // ---------------------------------------------
+    // --- CRÉATION DU SVG DE FLÈCHE ---
     function createArrowSVG(fullOption) {
-        // fullOption est la valeur du selecteur, ex: 'line-up' ou 'line-down'
-        if (fullOption === 'none' || !fullOption.startsWith('line-')) {
-            return null; // Ignore les autres styles que 'line'
-        }
+        if (fullOption === 'none' || !fullOption.startsWith('line-')) return null;
 
         const [style, dir] = fullOption.split('-');
-
-        // Dimensions : 10mm de large, 20mm de haut
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("width", "10mm");
         svg.setAttribute("height", "20mm");
@@ -161,36 +189,22 @@ refs.zoomSlider.addEventListener('input', (e) => {
         svg.style.flexShrink = "0";
 
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-
-        // Configuration pour le style LIGNE ÉPAISSE
         path.setAttribute("fill", "none");
         path.setAttribute("stroke", "#000");
-        path.setAttribute("stroke-width", "20"); // Epaisseur : 16 (TRÈS ÉPAIS)
+        path.setAttribute("stroke-width", "20");
         path.setAttribute("stroke-linecap", "round");
 
-        let dAttribute = "";
+        let dAttribute = (dir === 'up') 
+            ? "M 50,180 L 50,20 M 25,50 L 50,20 L 75,50" 
+            : "M 50,20 L 50,180 M 25,150 L 50,180 L 75,150";
 
-        if (dir === 'up') {
-            // Ligne du bas (180) vers le haut (20) + tête de flèche
-            dAttribute = "M 50,180 L 50,20 M 25,50 L 50,20 L 75,50";
-        } else if (dir === 'down') {
-            // Ligne du haut (20) vers le bas (180) + tête de flèche
-            dAttribute = "M 50,20 L 50,180 M 25,150 L 50,180 L 75,150";
-        }
-
-        if (dAttribute) {
-            path.setAttribute("d", dAttribute);
-            svg.appendChild(path);
-            return svg;
-        }
-
-        return null;
+        path.setAttribute("d", dAttribute);
+        svg.appendChild(path);
+        return svg;
     }
 
-
-    // --- RENDU DES CODES (Multi-Pages) ---
+    // --- RENDU DES CODES ---
     function renderBarcodes() {
-        // Supprimer toutes les pages supplémentaires sauf la première
         const sheetsToRemove = refs.sheetLayer.querySelectorAll('.sheet:not(#pageSheet)');
         sheetsToRemove.forEach(sheet => sheet.remove());
 
@@ -200,75 +214,49 @@ refs.zoomSlider.addEventListener('input', (e) => {
         const labelsPerPage = cols * rows;
 
         let dataToUse = appData.length === 0
-            ? ["EXEMPLE-1", "EXEMPLE-2", "EXEMPLE-3", "EXEMPLE-4", "EXEMPLE-5", "EXEMPLE-6", "EXEMPLE-7", "EXEMPLE-8"]
+            ? ["EXEMPLE-1", "EXEMPLE-2", "EXEMPLE-3"]
             : appData;
 
         const isDemo = appData.length === 0;
-
-        if (dataToUse.length === 0) {
-            refs.pageSheet.innerHTML = '<div id="gridContainer" class="grid-container"><div class="barcode-cell" style="color:#aaa; font-size:0.8rem;">(Zone d\'aperçu - Importez un fichier)</div></div>';
-            refs.gridContainer = document.getElementById('gridContainer');
-            return;
-        }
-
         const totalPages = Math.ceil(dataToUse.length / labelsPerPage);
-
         const fragment = document.createDocumentFragment();
 
         for (let p = 0; p < totalPages; p++) {
-            const pageStart = p * labelsPerPage;
-            const pageEnd = pageStart + labelsPerPage;
-            const pageData = dataToUse.slice(pageStart, pageEnd);
-
-            let currentSheet;
-            let pageGridContainer;
+            const pageData = dataToUse.slice(p * labelsPerPage, (p + 1) * labelsPerPage);
+            let currentSheet, pageGridContainer;
 
             if (p === 0) {
                 currentSheet = refs.pageSheet;
                 currentSheet.innerHTML = '';
-
-                pageGridContainer = document.createElement('div');
-                pageGridContainer.className = 'grid-container';
-                pageGridContainer.id = 'gridContainer';
-                currentSheet.appendChild(pageGridContainer);
-                refs.gridContainer = pageGridContainer;
             } else {
                 currentSheet = document.createElement('div');
                 currentSheet.className = 'sheet';
                 updateSheetCSS(currentSheet);
-
-                pageGridContainer = document.createElement('div');
-                pageGridContainer.className = 'grid-container';
-                currentSheet.appendChild(pageGridContainer);
-                fragment.appendChild(currentSheet);
             }
 
-            // Remplir la grille
-            pageData.forEach(code => {
-                createCell(code, scale, pageGridContainer, isDemo);
-            });
+            pageGridContainer = document.createElement('div');
+            pageGridContainer.className = 'grid-container';
+            currentSheet.appendChild(pageGridContainer);
+            if (p === 0) refs.gridContainer = pageGridContainer;
+
+            pageData.forEach(code => createCell(code, scale, pageGridContainer, isDemo));
+            if (p > 0) fragment.appendChild(currentSheet);
         }
 
         refs.sheetLayer.appendChild(fragment);
 
-        // Mise à jour du statut
         if (appData.length > 0) {
-            refs.importCount.textContent = `${appData.length} codes chargés, répartis sur ${totalPages} planches.`;
+            refs.importCount.textContent = `${appData.length} codes chargés.`;
         }
     }
 
-    // --- Création d'une cellule (Code-barres ou QR Code) ---
     function createCell(text, scale, containerElement, isDemo = false) {
         const cell = document.createElement('div');
         cell.className = 'barcode-cell';
         if (isDemo) cell.style.opacity = "0.3";
 
-        // AJOUT DE LA FLÈCHE
-        const arrowDirection = refs.arrowOption.value; // ex: 'line-up'
-        const arrowSVG = createArrowSVG(arrowDirection);
-        if (arrowSVG) {
-            cell.appendChild(arrowSVG);
-        }
+        const arrowSVG = createArrowSVG(refs.arrowOption.value);
+        if (arrowSVG) cell.appendChild(arrowSVG);
 
         try {
             const type = refs.codeType.value;
@@ -276,35 +264,22 @@ refs.zoomSlider.addEventListener('input', (e) => {
 
             if (type === 'QRCODE') {
                 element = document.createElement('canvas');
-                QRCode.toCanvas(element, String(text), {
-                    margin: 0,
-                    width: 100 * scale
-                });
+                QRCode.toCanvas(element, String(text), { margin: 0, width: 100 * scale });
             } else {
                 element = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                // Correction EAN13 check digit
                 let codeText = String(text);
                 if (type === 'EAN13') {
                     codeText = codeText.replace(/\D/g, "");
                     if (codeText.length === 12) codeText += calculCheckDigit(codeText);
                 }
-
                 JsBarcode(element, codeText, {
-                    format: type,
-                    lineColor: "#000",
-                    width: 2 * scale,
-                    height: 50 * scale,
-                    displayValue: true,
-                    margin: 5
+                    format: type, width: 2 * scale, height: 50 * scale, displayValue: true, margin: 5
                 });
             }
             cell.appendChild(element);
         } catch (e) {
-            cell.textContent = `Erreur: ${e.message.substring(0, 30)}...`;
-            cell.style.color = "red";
-            cell.style.fontSize = "0.7rem";
+            cell.innerHTML = `<span style="color:red;font-size:0.7rem;">Erreur</span>`;
         }
-
         containerElement.appendChild(cell);
     }
 
@@ -316,183 +291,73 @@ refs.zoomSlider.addEventListener('input', (e) => {
     }
 
     // --- IMPORT EXCEL ---
-    function handleFile(e) {
+    refs.excelInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
-            const data = e.target.result;
-            const workbook = XLSX.read(data, {
-                type: 'binary'
-            });
+            const workbook = XLSX.read(e.target.result, { type: 'binary' });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet, {
-                header: 1
-            });
+            const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-            // Filtre colonne A
             appData = json.map(r => r[0]).filter(c => c !== undefined && c !== "");
+            
+            // On synchronise les inputs manuels avec l'import
+            refs.manualContainer.innerHTML = '';
+            appData.forEach(val => createInputRow(val));
 
-            // UI Update
             refs.importStatus.style.display = 'block';
             refs.clearBtn.style.display = 'inline-flex';
-
             renderBarcodes();
         };
         reader.readAsBinaryString(file);
-    }
-
-    refs.excelInput.addEventListener('change', handleFile);
-
-    // Drop Zone handling
-    refs.dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        refs.dropZone.style.borderColor = 'var(--primary)';
-    });
-
-    refs.dropZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        refs.dropZone.style.borderColor = 'var(--border-subtle)';
-    });
-
-    refs.dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        refs.dropZone.style.borderColor = 'var(--border-subtle)';
-        if (e.dataTransfer.files.length) {
-            refs.excelInput.files = e.dataTransfer.files;
-            handleFile({ target: refs.excelInput });
-        }
     });
 
     // Clear
     refs.clearBtn.addEventListener('click', () => {
         appData = [];
+        refs.manualContainer.innerHTML = '';
+        createInputRow(); // On laisse une ligne vide
         refs.importStatus.style.display = 'none';
         refs.clearBtn.style.display = 'none';
         refs.excelInput.value = "";
         renderBarcodes();
     });
 
-    // --- Download PDF (Multi-Pages) avec Progression ---
+    // --- DOWNLOAD PDF ---
     refs.downloadBtn.addEventListener('click', async () => {
-        // Désactiver le bouton pendant le traitement
-        refs.downloadBtn.textContent = 'Génération en cours...';
+        refs.downloadBtn.textContent = 'Génération...';
         refs.downloadBtn.disabled = true;
-
-        // 1. Mise en place de l'environnement de capture
         const originalTransform = refs.sheetLayer.style.transform;
-        const originalBoxShadow = refs.sheetLayer.style.boxShadow;
-
-        // Réinitialiser le zoom/ombre pour la capture
         refs.sheetLayer.style.transform = "scale(1)";
-        refs.sheetLayer.style.boxShadow = "none";
 
-        // Récupérer toutes les planches affichées
         const sheets = refs.sheetLayer.querySelectorAll('.sheet');
-        if (sheets.length === 0 || appData.length === 0) {
-            alert("Aucune donnée chargée pour générer un PDF.");
-            refs.downloadBtn.textContent = 'Télécharger le PDF';
-            refs.downloadBtn.disabled = false;
-            return;
-        }
-
-        // 2. Initialisation de jsPDF
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
 
-        const pdfWidth = 210;
-        const pdfHeight = 297;
-
-        let firstPage = true;
-        let pageIndex = 1;
-        const totalSheets = sheets.length;
-
-        for (const sheet of sheets) {
-            // *** MISE À JOUR DE LA PROGRESSION ***
-            refs.downloadBtn.textContent = `Génération en cours... Page ${pageIndex} / ${totalSheets}`;
-
-            if (!firstPage) {
-                // Ajouter une nouvelle page au PDF pour toutes les feuilles après la première
-                pdf.addPage();
-            }
-
-            // 3. Capturer la feuille avec html2canvas (Scale: 2 pour l'optimisation)
-            const canvas = await html2canvas(sheet, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-            });
-
-            // 4. Ajouter la capture au PDF
-            const imgData = canvas.toDataURL('image/png');
-
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-            firstPage = false;
-            pageIndex++;
+        for (let i = 0; i < sheets.length; i++) {
+            if (i > 0) pdf.addPage();
+            const canvas = await html2canvas(sheets[i], { scale: 2, useCORS: true });
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
         }
 
-        // 5. Téléchargement du fichier
-        pdf.save('planche_etiquettes_multi-pages.pdf');
-
-        // 6. Restauration de l'affichage et du bouton
+        pdf.save('planche_codes.pdf');
         refs.sheetLayer.style.transform = originalTransform;
-        refs.sheetLayer.style.boxShadow = originalBoxShadow;
         refs.downloadBtn.textContent = 'Télécharger le PDF';
         refs.downloadBtn.disabled = false;
     });
 
+    // --- MODALE D'AIDE ---
+    const openModal = () => refs.helpModal?.classList.add('open');
+    const closeModal = () => refs.helpModal?.classList.remove('open');
+    refs.helpButton?.addEventListener('click', openModal);
+    refs.closeModalBtn?.addEventListener('click', closeModal);
 
-    // ------------------------------------------------
-    // --- GESTION DE LA MODALE D'AIDE (CORRIGÉE) ---
-    // ------------------------------------------------
-
-    // Fonction pour ouvrir la modale
-    function openModal() {
-        if (refs.helpModal) refs.helpModal.classList.add('open');
-    }
-
-    // Fonction pour fermer la modale
-    function closeModal() {
-        if (refs.helpModal) refs.helpModal.classList.remove('open');
-    }
-
-    // 1. Ouvrir la modale au clic sur le bouton '?'
-    if (refs.helpButton) {
-        refs.helpButton.addEventListener('click', openModal);
-    }
-
-    // 2. Fermer la modale au clic sur le bouton 'X'
-    if (refs.closeModalBtn) {
-        refs.closeModalBtn.addEventListener('click', closeModal);
-    }
-
-    // 3. Fermer la modale si on clique en dehors (sur l'overlay)
-    if (refs.helpModal) {
-        refs.helpModal.addEventListener('click', (e) => {
-            // Ne fermer que si l'élément cliqué est l'overlay lui-même
-            if (e.target === refs.helpModal) {
-                closeModal();
-            }
-        });
-    }
-
-    // 4. Fermer la modale si on appuie sur la touche ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && refs.helpModal && refs.helpModal.classList.contains('open')) {
-            closeModal();
-        }
-    });
-
-
-    // --- Init ---
-    populatePresets();
-    updateGridCSS();
-    renderBarcodes(); // Affiche l'exemple au démarrage
-
-    // AJOUT: Initialiser le pourcentage de zoom
-    const initialScale = parseFloat(refs.zoomSlider.value);
-    const initialPercentage = Math.round(initialScale * 100);
-    refs.zoomValue.textContent = `${initialPercentage}%`;
+    // --- INIT ---
+    populatePresets();
+    updateGridCSS();
+    // On crée deux lignes d'input par défaut
+    createInputRow();
+    createInputRow();
+    renderBarcodes();
 });
