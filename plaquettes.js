@@ -1,23 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- MISE À JOUR DE L'OBJET REFS ---
+    // --- RÉFÉRENCES ---
     const refs = {
-        excelInput: document.getElementById('excelInput'),
-        dropZone: document.getElementById('dropZone'),
-        importStatus: document.getElementById('importStatus'),
-        importCount: document.getElementById('importCount'),
-        clearBtn: document.getElementById('clearDataBtn'),
-        downloadBtn: document.getElementById('downloadBtn'),
-
-        gridContainer: document.getElementById('gridContainer'),
-        pageSheet: document.getElementById('pageSheet'),
-        sheetLayer: document.getElementById('sheetLayer'),
-        zoomSlider: document.getElementById('zoomSlider'),
-        zoomValue: document.getElementById('zoomValue'),
-
         manualContainer: document.getElementById('manualInputContainer'),
         addCodeBtn: document.getElementById('addCodeInputBtn'),
-
+        pageSheet: document.getElementById('pageSheet'),
+        sheetLayer: document.getElementById('sheetLayer'),
+        
+        // Config Inputs
         codeType: document.getElementById('codeType'),
         marginTop: document.getElementById('marginTop'),
         marginLeft: document.getElementById('marginLeft'),
@@ -25,35 +15,27 @@ document.addEventListener('DOMContentLoaded', () => {
         nbRows: document.getElementById('nbRows'),
         rowHeight: document.getElementById('rowHeight'),
         codeScale: document.getElementById('codeScale'),
-
-        gridPresetSelect: document.getElementById('gridPresetSelect'),
         arrowOption: document.getElementById('arrowOption'),
-
-        helpModal: document.getElementById('helpModal'),
-        helpButton: document.getElementById('helpButton'), 
-        closeModalBtn: document.getElementById('closeModalBtn')
+        gridPresetSelect: document.getElementById('gridPresetSelect'),
+        
+        // Autres
+        zoomSlider: document.getElementById('zoomSlider'),
+        zoomValue: document.getElementById('zoomValue'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        excelInput: document.getElementById('excelInput'),
+        clearBtn: document.getElementById('clearDataBtn'),
+        importStatus: document.getElementById('importStatus'),
+        importCount: document.getElementById('importCount')
     };
 
-    let appData = []; 
+    let appData = [];
 
-    // --- PRESETS (INCHANGÉS) ---
-    const gridPresets = [
-        { name: "Planche de 24 70x36", marginTop: 3.5, marginLeft: 0, nbCols: 3, nbRows: 8, rowHeight: 36 },
-        { name: "Planche de 4 210x74", marginTop: 0, marginLeft: 0, nbCols: 1, nbRows: 4, rowHeight: 74 },
-        { name: "Petites Étiquettes (4x10)", marginTop: 5, marginLeft: 5, nbCols: 4, nbRows: 10, rowHeight: 25 },
-        { name: "Très Grandes (2x2)", marginTop: 15, marginLeft: 15, nbCols: 2, nbRows: 2, rowHeight: 120 }
-    ];
-
-    // --- LOGIQUE DE SAISIE MANUELLE ---
+    // --- LOGIQUE DE SAISIE ET MISE À JOUR ---
 
     function syncManualInputs() {
         const inputs = document.querySelectorAll('.manual-code-input');
-        // On récupère toutes les valeurs pour mettre à jour appData
-        appData = Array.from(inputs)
-            .map(input => input.value.trim())
-            .filter(val => val !== ""); 
-        
-        // Rendu immédiat
+        // On récupère les valeurs et on filtre les vides
+        appData = Array.from(inputs).map(i => i.value.trim()).filter(v => v !== "");
         renderBarcodes();
     }
 
@@ -67,12 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
         input.value = value;
         input.placeholder = "Entrez un code...";
         
-        // L'événement 'input' déclenche la mise à jour à chaque touche pressée
+        // Mise à jour immédiate pendant la frappe
         input.addEventListener('input', syncManualInputs);
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-code-btn';
-        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.innerHTML = '×';
         removeBtn.onclick = () => {
             row.remove();
             syncManualInputs();
@@ -83,198 +65,141 @@ document.addEventListener('DOMContentLoaded', () => {
         refs.manualContainer.appendChild(row);
     }
 
-    if (refs.addCodeBtn) {
-        refs.addCodeBtn.addEventListener('click', () => createInputRow());
-    }
+    // --- RENDU DES CODES ---
 
-    // --- GESTION DU ZOOM ---
-    refs.zoomSlider.addEventListener('input', (e) => {
-        const scale = parseFloat(e.target.value);
-        refs.sheetLayer.style.transform = `scale(${scale})`;
-        refs.zoomValue.textContent = `${Math.round(scale * 100)}%`;
-    });
-
-    // --- MISE A JOUR CSS ---
-    function updateSheetCSS(sheetElement) {
-        const style = sheetElement.style;
-        style.setProperty('--mt', refs.marginTop.value + 'mm');
-        style.setProperty('--ml', refs.marginLeft.value + 'mm');
-        style.setProperty('--cols', refs.nbCols.value);
-        style.setProperty('--rows', refs.nbRows.value);
-        style.setProperty('--lh', refs.rowHeight.value + 'mm');
-    }
-
-    function updateGridCSS() {
-        updateSheetCSS(refs.pageSheet);
-    }
-
-    [refs.marginTop, refs.marginLeft, refs.nbCols, refs.nbRows, refs.rowHeight, refs.codeScale, refs.codeType, refs.arrowOption]
-        .forEach(el => el.addEventListener('input', () => {
-            if (el !== refs.arrowOption && el !== refs.codeType) {
-                refs.gridPresetSelect.value = "";
-            }
-            updateGridCSS();
-            renderBarcodes();
-        }));
-
-    // --- PRESETS ---
-    function populatePresets() {
-        gridPresets.forEach((preset, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = preset.name;
-            refs.gridPresetSelect.appendChild(option);
-        });
-    }
-
-    refs.gridPresetSelect.addEventListener('change', (e) => {
-        const selectedIndex = e.target.value;
-        if (selectedIndex === "") return;
-        const preset = gridPresets[selectedIndex];
-        refs.marginTop.value = preset.marginTop;
-        refs.marginLeft.value = preset.marginLeft;
-        refs.nbCols.value = preset.nbCols;
-        refs.nbRows.value = preset.nbRows;
-        refs.rowHeight.value = preset.rowHeight;
-        updateGridCSS();
-        renderBarcodes();
-    });
-
-    // --- FLÈCHES ---
-    function createArrowSVG(fullOption) {
-        if (fullOption === 'none' || !fullOption.startsWith('line-')) return null;
-        const [style, dir] = fullOption.split('-');
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", "10mm"); svg.setAttribute("height", "20mm");
-        svg.setAttribute("viewBox", "0 0 100 200");
-        svg.style.marginRight = "5px"; svg.style.flexShrink = "0";
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("fill", "none"); path.setAttribute("stroke", "#000");
-        path.setAttribute("stroke-width", "20"); path.setAttribute("stroke-linecap", "round");
-        let d = (dir === 'up') ? "M 50,180 L 50,20 M 25,50 L 50,20 L 75,50" : "M 50,20 L 50,180 M 25,150 L 50,180 L 75,150";
-        path.setAttribute("d", d);
-        svg.appendChild(path);
-        return svg;
-    }
-
-    // --- RENDU (OPTIMISÉ POUR L'IMMÉDIATETÉ) ---
     function renderBarcodes() {
-        const sheetsToRemove = refs.sheetLayer.querySelectorAll('.sheet:not(#pageSheet)');
-        sheetsToRemove.forEach(sheet => sheet.remove());
+        // Nettoyage des anciennes pages
+        const extraSheets = refs.sheetLayer.querySelectorAll('.sheet:not(#pageSheet)');
+        extraSheets.forEach(s => s.remove());
 
-        const scale = parseFloat(refs.codeScale.value);
-        const cols = parseInt(refs.nbCols.value);
-        const rows = parseInt(refs.nbRows.value);
+        const scale = parseFloat(refs.codeScale.value) || 1;
+        const cols = parseInt(refs.nbCols.value) || 1;
+        const rows = parseInt(refs.nbRows.value) || 1;
         const labelsPerPage = cols * rows;
 
-        // Si on tape, on affiche le contenu des inputs, sinon l'exemple
-        let dataToUse = appData.length === 0 ? ["TEXTE..."] : appData;
-        const isDemo = appData.length === 0;
-
-        const totalPages = Math.ceil(dataToUse.length / labelsPerPage);
-        const fragment = document.createDocumentFragment();
+        // Si vide, on met un texte par défaut
+        let dataToDraw = appData.length > 0 ? appData : ["APERÇU"];
+        const totalPages = Math.ceil(dataToDraw.length / labelsPerPage);
 
         for (let p = 0; p < totalPages; p++) {
-            const pageData = dataToUse.slice(p * labelsPerPage, (p + 1) * labelsPerPage);
+            const pageData = dataToDraw.slice(p * labelsPerPage, (p + 1) * labelsPerPage);
             let currentSheet;
 
             if (p === 0) {
                 currentSheet = refs.pageSheet;
-                currentSheet.innerHTML = '';
+                currentSheet.innerHTML = ''; 
             } else {
                 currentSheet = document.createElement('div');
                 currentSheet.className = 'sheet';
-                updateSheetCSS(currentSheet);
+                refs.sheetLayer.appendChild(currentSheet);
             }
+            
+            updateSheetCSS(currentSheet);
+            const grid = document.createElement('div');
+            grid.className = 'grid-container';
+            currentSheet.appendChild(grid);
 
-            const pageGridContainer = document.createElement('div');
-            pageGridContainer.className = 'grid-container';
-            currentSheet.appendChild(pageGridContainer);
+            pageData.forEach(code => {
+                const cell = document.createElement('div');
+                cell.className = 'barcode-cell';
+                
+                const arrow = createArrowSVG(refs.arrowOption.value);
+                if(arrow) cell.appendChild(arrow);
 
-            pageData.forEach(code => createCell(code, scale, pageGridContainer, isDemo));
-            if (p > 0) fragment.appendChild(currentSheet);
+                const type = refs.codeType.value;
+                try {
+                    if (type === 'QRCODE') {
+                        const canvas = document.createElement('canvas');
+                        cell.appendChild(canvas);
+                        grid.appendChild(cell);
+                        QRCode.toCanvas(canvas, code, { width: 100 * scale, margin: 0 });
+                    } else {
+                        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                        cell.appendChild(svg);
+                        grid.appendChild(cell);
+                        JsBarcode(svg, code, {
+                            format: type,
+                            width: 2 * scale,
+                            height: 50 * scale,
+                            displayValue: true
+                        });
+                    }
+                } catch(e) {
+                    cell.innerHTML = "<small>Err</small>";
+                    grid.appendChild(cell);
+                }
+            });
         }
-        refs.sheetLayer.appendChild(fragment);
     }
 
-    function createCell(text, scale, containerElement, isDemo = false) {
-        const cell = document.createElement('div');
-        cell.className = 'barcode-cell';
-        if (isDemo) cell.style.opacity = "0.3";
+    // --- FONCTIONS UTILES ---
 
-        const arrowSVG = createArrowSVG(refs.arrowOption.value);
-        if (arrowSVG) cell.appendChild(arrowSVG);
-
-        try {
-            const type = refs.codeType.value;
-            if (type === 'QRCODE') {
-                const canvas = document.createElement('canvas');
-                containerElement.appendChild(cell); // On ajoute au DOM avant pour QRCode
-                cell.appendChild(canvas);
-                QRCode.toCanvas(canvas, String(text), { margin: 0, width: 100 * scale });
-            } else {
-                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                cell.appendChild(svg);
-                JsBarcode(svg, String(text), {
-                    format: type, width: 2 * scale, height: 50 * scale, displayValue: true, margin: 5
-                });
-                containerElement.appendChild(cell);
-            }
-        } catch (e) {
-            cell.innerHTML = `<span style="color:red;font-size:0.6rem;">Format invalide</span>`;
-            containerElement.appendChild(cell);
-        }
+    function updateSheetCSS(sheet) {
+        sheet.style.setProperty('--mt', refs.marginTop.value + 'mm');
+        sheet.style.setProperty('--ml', refs.marginLeft.value + 'mm');
+        sheet.style.setProperty('--cols', refs.nbCols.value);
+        sheet.style.setProperty('--rows', refs.nbRows.value);
+        sheet.style.setProperty('--lh', refs.rowHeight.value + 'mm');
     }
 
-    // --- IMPORT / CLEAR ---
-    refs.excelInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const workbook = XLSX.read(e.target.result, { type: 'binary' });
-            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            appData = json.map(r => r[0]).filter(c => c !== undefined && c !== "");
+    function createArrowSVG(val) {
+        if (val === 'none') return null;
+        const dir = val.split('-')[1];
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", "30"); svg.setAttribute("height", "60");
+        svg.setAttribute("viewBox", "0 0 100 200");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("fill", "none"); path.setAttribute("stroke", "black"); path.setAttribute("stroke-width", "15");
+        path.setAttribute("d", dir === 'up' ? "M50,150 L50,50 M20,80 L50,50 L80,80" : "M50,50 L50,150 M20,120 L50,150 L80,120");
+        svg.appendChild(path);
+        return svg;
+    }
+
+    // --- GESTION EXCEL & CLEAR ---
+
+    if(refs.excelInput) {
+        refs.excelInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                appData = json.map(r => r[0]).filter(c => c != null && c !== "");
+                
+                refs.manualContainer.innerHTML = '';
+                appData.forEach(val => createInputRow(val));
+                renderBarcodes();
+            };
+            reader.readAsBinaryString(file);
+        });
+    }
+
+    if(refs.clearBtn) {
+        refs.clearBtn.onclick = () => {
+            appData = [];
             refs.manualContainer.innerHTML = '';
-            appData.forEach(val => createInputRow(val));
-            refs.importStatus.style.display = 'block';
-            refs.clearBtn.style.display = 'inline-flex';
+            createInputRow();
             renderBarcodes();
         };
-        reader.readAsBinaryString(file);
+    }
+
+    // --- ÉCOUTEURS D'ÉVÉNEMENTS ---
+
+    refs.addCodeBtn.onclick = () => createInputRow();
+
+    [refs.marginTop, refs.marginLeft, refs.nbCols, refs.nbRows, refs.rowHeight, refs.codeScale, refs.codeType, refs.arrowOption]
+    .forEach(el => {
+        if(el) el.oninput = () => renderBarcodes();
     });
 
-    refs.clearBtn.addEventListener('click', () => {
-        appData = [];
-        refs.manualContainer.innerHTML = '';
-        createInputRow();
-        refs.importStatus.style.display = 'none';
-        refs.clearBtn.style.display = 'none';
-        renderBarcodes();
-    });
+    refs.zoomSlider.oninput = (e) => {
+        const val = e.target.value;
+        refs.sheetLayer.style.transform = `scale(${val})`;
+        refs.zoomValue.textContent = Math.round(val * 100) + "%";
+    };
 
-    // --- PDF ---
-    refs.downloadBtn.addEventListener('click', async () => {
-        refs.downloadBtn.textContent = 'Génération...';
-        refs.downloadBtn.disabled = true;
-        const originalTransform = refs.sheetLayer.style.transform;
-        refs.sheetLayer.style.transform = "scale(1)";
-        const sheets = refs.sheetLayer.querySelectorAll('.sheet');
-        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-        for (let i = 0; i < sheets.length; i++) {
-            if (i > 0) pdf.addPage();
-            const canvas = await html2canvas(sheets[i], { scale: 2 });
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
-        }
-        pdf.save('planche_codes.pdf');
-        refs.sheetLayer.style.transform = originalTransform;
-        refs.downloadBtn.textContent = 'Télécharger le PDF';
-        refs.downloadBtn.disabled = false;
-    });
-
-    // --- INIT ---
-    populatePresets();
-    updateGridCSS();
-    createInputRow();
+    // --- INITIALISATION ---
+    createInputRow(); 
     renderBarcodes();
 });
