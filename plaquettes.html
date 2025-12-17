@@ -38,15 +38,27 @@
             </div>
 
 
-            <div class="control-group">
-                <label>1. Source de Données (Excel)</label>
+<div class="control-group">
+                <label>1. Saisie des Codes (Manuel)</label>
+                
+                <div id="manualInputContainer" class="input-list-container">
+                    <input type="text" class="manual-code-input" data-index="0" placeholder="Code 1">
+                    <input type="text" class="manual-code-input" data-index="1" placeholder="Code 2">
+                </div>
+
+                <button id="addCodeInputBtn" class="action-btn btn-secondary" style="margin-bottom: 10px;">
+                    <i class="fas fa-plus"></i> Ajouter un code
+                </button>
+                
+                <label style="text-align: center; margin: 10px 0; font-style: italic; opacity: 0.8; font-size: 0.75rem;">OU IMPORTER</label>
+                
                 <label class="drop-zone" id="dropZone">
                     <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
                     <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
                     <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
                 </label>
 
-                <div id="importStatus" class="status-card">
+                <div id="importStatus" class="status-card" style="display:none;">
                     <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
                     <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
                 </div>
