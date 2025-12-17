@@ -224,6 +224,52 @@ document.addEventListener('DOMContentLoaded', () => {
         refs.zoomValue.textContent = `${Math.round(scale * 100)}%`;
     };
 
+// --- GESTION DE LA MODALE D'AIDE (CORRIGÉ) ---
+
+    // Fonction pour ouvrir la modale
+    function openModal() {
+        if (refs.helpModal) refs.helpModal.classList.add('open');
+    }
+
+    // Fonction pour fermer la modale
+    function closeModal() {
+        if (refs.helpModal) refs.helpModal.classList.remove('open');
+    }
+
+    // 1. Ouvrir la modale au clic sur le bouton '?'
+    if (refs.helpButton) {
+        refs.helpButton.addEventListener('click', openModal);
+    }
+
+    // 2. Fermer la modale au clic sur le bouton 'X'
+    if (refs.closeModalBtn) {
+        refs.closeModalBtn.addEventListener('click', closeModal);
+    }
+
+    // 3. Fermer la modale si on clique en dehors (sur l'overlay)
+    if (refs.helpModal) {
+        refs.helpModal.addEventListener('click', (e) => {
+            // Ne fermer que si l'élément cliqué est l'overlay lui-même
+            if (e.target === refs.helpModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // 4. Fermer la modale si on appuie sur la touche ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && refs.helpModal && refs.helpModal.classList.contains('open')) {
+            closeModal();
+        }
+    });
+
+
+
+
+    
+
+    
+
     // --- INIT ---
     populatePresets();
     updateSheetCSS(refs.pageSheet);
