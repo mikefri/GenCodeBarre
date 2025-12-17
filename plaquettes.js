@@ -29,13 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModalBtn: document.getElementById('closeModalBtn')
     };
 
-    // --- STOCKAGE SÉPARÉ ---
-    let manualData = []; // Pour les inputs manuels
-    let excelData = [];  // Pour les données Excel
+    // --- STOCKAGE ---
+    let manualData = []; 
+    let excelData = [];  
 
+    // --- TES PRESETS RÉINSTALLÉS ---
     const gridPresets = [
         { name: "Planche de 24 70x36", marginTop: 3.5, marginLeft: 0, nbCols: 3, nbRows: 8, rowHeight: 36 },
-        { name: "Planche de 4 210x74", marginTop: 0, marginLeft: 0, nbCols: 1, nbRows: 4, rowHeight: 74 }
+        { name: "Planche de 4 210x74", marginTop: 0, marginLeft: 0, nbCols: 1, nbRows: 4, rowHeight: 74 },
+        { name: "Petites Étiquettes (4x10)", marginTop: 5, marginLeft: 5, nbCols: 4, nbRows: 10, rowHeight: 25 },
+        { name: "Très Grandes (2x2)", marginTop: 15, marginLeft: 15, nbCols: 2, nbRows: 2, rowHeight: 120 }
     ];
 
     // --- LOGIQUE MANUELLE ---
@@ -67,12 +70,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (refs.addCodeBtn) refs.addCodeBtn.onclick = () => createInputRow();
 
-    // --- GESTION DU ZOOM ---
-    refs.zoomSlider.oninput = (e) => {
-        const scale = parseFloat(e.target.value);
-        refs.sheetLayer.style.transform = `scale(${scale})`;
-        refs.zoomValue.textContent = `${Math.round(scale * 100)}%`;
-    };
+    // --- GESTION DES PRESETS ---
+    function populatePresets() {
+        if (!refs.gridPresetSelect) return;
+        gridPresets.forEach((preset, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = preset.name;
+            refs.gridPresetSelect.appendChild(option);
+        });
+    }
+
+    if (refs.gridPresetSelect) {
+        refs.gridPresetSelect.addEventListener('change', (e) => {
+            const selectedIndex = e.target.value;
+            if (selectedIndex === "") return;
+            const preset = gridPresets[selectedIndex];
+            refs.marginTop.value = preset.marginTop;
+            refs.marginLeft.value = preset.marginLeft;
+            refs.nbCols.value = preset.nbCols;
+            refs.nbRows.value = preset.nbRows;
+            refs.rowHeight.value = preset.rowHeight;
+            updateSheetCSS(refs.pageSheet);
+            renderBarcodes();
+        });
+    }
 
     // --- RENDU ---
     function renderBarcodes() {
@@ -84,13 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const rows = parseInt(refs.nbRows.value);
         const labelsPerPage = cols * rows;
 
-        // FUSION DES DEUX SOURCES : Excel en premier, puis Manuel
         const filteredManual = manualData.filter(v => v !== "");
         let dataToUse = [...excelData, ...filteredManual];
         
-        if (dataToUse.length === 0) dataToUse = ["EXEMPLE"];
+        if (dataToUse.length === 0) dataToUse = ["APERÇU"];
 
-        const isDemo = dataToUse[0] === "EXEMPLE";
+        const isDemo = dataToUse[0] === "APERÇU";
         const totalPages = Math.ceil(dataToUse.length / labelsPerPage);
         const fragment = document.createDocumentFragment();
 
@@ -139,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 containerElement.appendChild(cell);
             }
         } catch (e) {
-            cell.innerHTML = `<span style="color:red;font-size:0.7rem;">Invalide</span>`;
+            cell.innerHTML = `<span style="color:red;font-size:0.7rem;">Erreur</span>`;
             containerElement.appendChild(cell);
         }
     }
@@ -152,11 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = function(e) {
             const workbook = XLSX.read(e.target.result, { type: 'binary' });
             const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            
-            // On remplit excelData AU LIEU de manualData
             excelData = json.map(r => r[0]).filter(c => c !== undefined && c !== "");
-            
-            // On ne touche plus à manualContainer !
             if (refs.importStatus) refs.importStatus.style.display = 'block';
             if (refs.importCount) refs.importCount.textContent = `${excelData.length} codes Excel`;
             renderBarcodes();
@@ -164,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsBinaryString(file);
     });
 
-    // --- ACTIONS ---
+    // --- FONCTIONS UTILES ---
     function updateSheetCSS(sheetElement) {
         sheetElement.style.setProperty('--mt', refs.marginTop.value + 'mm');
         sheetElement.style.setProperty('--ml', refs.marginLeft.value + 'mm');
@@ -195,10 +212,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBarcodes();
     };
 
+    // Écouteurs configs
     [refs.marginTop, refs.marginLeft, refs.nbCols, refs.nbRows, refs.rowHeight, refs.codeScale, refs.codeType, refs.arrowOption]
-        .forEach(el => el.addEventListener('input', () => { updateSheetCSS(refs.pageSheet); renderBarcodes(); }));
+        .forEach(el => el.addEventListener('input', () => { 
+            updateSheetCSS(refs.pageSheet); 
+            renderBarcodes(); 
+        }));
+
+    // Zoom
+    refs.zoomSlider.oninput = (e) => {
+        const scale = parseFloat(e.target.value);
+        refs.sheetLayer.style.transform = `scale(${scale})`;
+        refs.zoomValue.textContent = `${Math.round(scale * 100)}%`;
+    };
 
     // --- INIT ---
+    populatePresets();
     updateSheetCSS(refs.pageSheet);
     createInputRow();
     renderBarcodes();
