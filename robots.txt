@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Indique l'emplacement de ton sitemap
+Sitemap: https://gencodebarre.ddns.net/sitemap.xml
