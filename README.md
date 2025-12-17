@@ -1,32 +1,45 @@
-# 🏷️ GenCodeBarres v2.3 - Générateur de Planches d'Étiquettes
+🏷️ GenCodeBarres v2.3 - Générateur de Planches d'Étiquettes
+GenCodeBarres v2.3 est une solution web performante conçue pour la production rapide et massive de codes-barres et de QR Codes. L'outil organise vos données en planches d'étiquettes millimétrées prêtes à l'impression, idéal pour les inventaires et la gestion logistique.
 
-## 🚀 Introduction
+[!IMPORTANT] Confidentialité totale : Aucune donnée n'est envoyée vers un serveur. Le traitement Excel et la génération de PDF se font exclusivement en local dans votre navigateur.
 
-**GenCodeBarres v2.3** est une application web conçue pour la production rapide et en masse de codes-barres et de QR Codes, organisés en planches d'étiquettes prêtes à être imprimées. Cet outil est idéal pour les inventaires, la gestion des actifs, ou l'étiquetage de produits nécessitant des configurations de grille précises (marges, hauteur, colonnes).
+🚀 Workflow Utilisateur
+Import : Glissez votre fichier .xlsx (les codes doivent être en colonne A).
 
-La fonctionnalité principale de cet onglet est l'importation de listes de codes via un fichier **Excel (.xlsx)** pour générer des planches en **série**.
+Setup : Choisissez votre format de code et votre grille (Avery, Agipa, ou sur-mesure).
 
-## ✨ Fonctionnalités Clés
+Export : Imprimez directement ou générez un PDF multi-pages optimisé.
 
-* **Importation en Lot** : Importation de codes à partir de la **colonne A** d'un fichier Excel (.xlsx).
-* **Types de Codes Pris en Charge** :
-    * Code 128 (Standard pour la plupart des usages).
-    * EAN-13 (avec calcul automatique du chiffre de contrôle pour les produits).
-    * QR Code (pour liens ou informations détaillées).
-* **Configuration de Grille Avancée** :
-    * Prise en charge de **Presets** de planches d'étiquettes courantes (ex: 3x8, 4x10).
-    * Contrôle précis des **Marges** (Haut et Gauche en `mm`).
-    * Définition du nombre de **Colonnes** et de **Lignes**.
-    * Ajustement de la **Hauteur d'Étiquette** (`mm`) et de l'**Échelle du Code**.
-* **Fonctionnalité d'Orientation** : Option d'ajouter une flèche latérale (Haut ou Bas) pour faciliter l'orientation du collage ou de la lecture.
-* **Exportation** :
-    * Aperçu en temps réel des planches.
-    * Exportation **Multi-Pages** vers un fichier **PDF** optimisé (via `html2canvas` et `jsPDF`).
-    * Impression directe via les médias d'impression CSS.
+📱 Utilisation Hors-ligne (PWA)
+Ce projet est une Progressive Web App. Vous pouvez :
 
-## 🛠️ Stack Technique
+L'installer sur votre bureau (Chrome/Edge) ou écran d'accueil (iOS/Android).
 
-Ce projet est une application web statique (côté client) utilisant les technologies suivantes :
+L'utiliser sans connexion internet une fois la première visite effectuée, idéal pour les environnements de stockage ou entrepôts.
+
+✨ Fonctionnalités Clés
+Importation en Lot : Chargement massif via fichier Excel (.xlsx) ou saisie manuelle.
+
+Types de Codes Supportés :
+
+Code 128 : Standard universel pour la logistique.
+
+EAN-13 : Pour la distribution (avec calcul automatique du chiffre de contrôle).
+
+QR Code : Pour les liens URL ou informations complexes.
+
+Configuration de Grille Avancée :
+
+Presets intégrés pour planches standards (ex: 3x8, 4x10).
+
+Marges (Haut/Gauche) et hauteur d'étiquette réglables au millimètre (mm).
+
+Fonctionnalité d'Orientation : Option d'ajouter une flèche directionnelle pour faciliter la pose des étiquettes.
+
+Exportation Pro : Aperçu temps réel, export PDF multi-pages et impression directe via CSS Media Queries.
+
+🛠️ Stack Technique
+Ce projet est une application web statique utilisant les bibliothèques suivantes :
 
 | Composant | Description | Librairie Utilisée |
 | :--- | :--- | :--- |
@@ -36,33 +49,29 @@ Ce projet est une application web statique (côté client) utilisant les technol
 | **Exportation PDF** | Conversion du HTML/SVG/Canvas en PDF | `html2canvas` et `jspdf` |
 | **UI/UX** | Thème sombre (Slate) et mise en page réactive. | HTML / CSS / JavaScript |
 
-## 📦 Installation et Démarrage
+📦 Installation et Démarrage
+Le projet est entièrement client-side et ne nécessite pas de serveur :
 
-Le projet est entièrement *client-side* et ne nécessite pas de serveur pour fonctionner :
+Téléchargez les fichiers sources (index.html, plaquettes.js, plaquettes.css, manifest.json, sw.js).
 
-1.  Téléchargez tous les fichiers sources (`index.html`, `plaquettes.js`, et `plaquettes.css`).
-2.  Assurez-vous que les dépendances externes listées dans le HTML sont accessibles (CDN).
-3.  Ouvrez le fichier HTML dans votre navigateur (`file:///.../nom_du_fichier.html`).
+Assurez-vous d'avoir une connexion pour le premier chargement des dépendances via CDN (ou téléchargez-les localement).
 
-## ✍️ Guide d'Utilisation (Onglet Planches)
+Ouvrez le fichier HTML dans votre navigateur ou cliquez sur "Installer" via la barre d'adresse pour le mode PWA.
 
-### 1. Préparation des Données
+✍️ Guide d'Utilisation
+1. Préparation des Données
+Listez vos codes dans la Colonne A d'un fichier Excel.
 
-* Créez un fichier **Excel (.xlsx)**.
-* Listez tous les codes (numériques ou alphanumériques) que vous souhaitez générer dans la **Colonne A** du fichier.
-* Glissez-déposez le fichier sur la zone **"Import .xlsx"** ou cliquez pour le sélectionner. Le statut d'importation confirmera le nombre de codes chargés.
+Glissez-déposez le fichier dans la zone "Import .xlsx". Le compteur affichera le nombre de codes détectés.
 
-### 2. Configuration et Aperçu
+2. Configuration & Aperçu
+Sélectionnez un Modèle prédéfini ou ajustez les dimensions manuellement pour correspondre à vos planches d'étiquettes vierges.
 
-1.  **Type de Code** : Choisissez le format de code (Code 128, EAN-13 ou QR Code).
-2.  **Configuration Planches** :
-    * Sélectionnez un **Modèle prédéfini** pour appliquer les dimensions d'une planche standard.
-    * *OU* ajustez manuellement les dimensions (Marges, Colonnes, Lignes, Hauteur d'Étiquette) en millimètres (`mm`) pour correspondre à vos étiquettes vierges.
-3.  **Visualisation** : L'aperçu est mis à jour en temps réel. Utilisez le curseur de **Zoom** pour vérifier l'alignement sans affecter le résultat de l'impression.
+Utilisez le curseur de Zoom pour inspecter le rendu. Cela n'affecte en rien l'échelle réelle lors de l'impression.
 
-### 3. Impression et Exportation
+3. Impression et Exportation
+Télécharger le PDF : Génère un fichier multi-pages fidèle à votre configuration.
 
-Une fois la configuration validée dans l'aperçu :
+Imprimer : Ouvre le dialogue d'impression système. Le style CSS dédié masque automatiquement l'interface utilisateur pour ne laisser que les planches.
 
-* **Télécharger le PDF** : Lance la conversion de toutes les pages générées en un seul fichier PDF optimisé pour l'impression (idéal pour l'envoi à une imprimerie ou une impression différée).
-* **Imprimer toutes les Planches** : Lance directement la boîte de dialogue d'impression de votre navigateur. Le CSS d'impression est conçu pour supprimer l'interface et les marges par défaut, garantissant une sortie fidèle aux dimensions définies.
+Développé pour l'efficacité logistique et le respect de la vie privée.
