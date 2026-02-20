@@ -7,14 +7,13 @@
     <title>Générer des Planches de Codes-Barres via Excel | GenCodeBarre</title>
     <meta name="description" content="Transformez vos listes Excel en planches d'étiquettes codes-barres prêtes à imprimer. Compatible A4, modèles prédéfinis et personnalisation complète.">
     <meta property="og:type" content="website">
-<meta property="og:url" content="https://gencodebarre.ddns.net">
-<meta property="og:title" content="GenCodeBarres - L'outil logistique gratuit">
-<meta property="og:description" content="Transformez vos fichiers Excel en planches d'étiquettes codes-barres en un clic.">
-<meta property="og:image" content="https://gencodebarre.ddns.net/icon-512x512.png">
-
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="GenCodeBarres">
-<meta property="twitter:description" content="Générateur de planches d'étiquettes hors-ligne.">
+    <meta property="og:url" content="https://gencodebarre.ddns.net">
+    <meta property="og:title" content="GenCodeBarres - L'outil logistique gratuit">
+    <meta property="og:description" content="Transformez vos fichiers Excel en planches d'étiquettes codes-barres en un clic.">
+    <meta property="og:image" content="https://gencodebarre.ddns.net/icon-512x512.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="GenCodeBarres">
+    <meta property="twitter:description" content="Générateur de planches d'étiquettes hors-ligne.">
     <meta name="theme-color" content="#0f172a">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +28,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <link rel="stylesheet" href="plaquettes.css">
-    
 </head>
 
 <body>
@@ -43,25 +41,22 @@
 
             <div class="tabs-nav">
                 <button class="tab-btn" onclick="window.location.href='https://mikefri.github.io/GenCodeBarre/'">Création</button>
-                
                 <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Planches</button>
             </div>
 
-
-<div class="control-group">
+            <div class="control-group">
                 <label>1. Saisie des Codes (Manuel)</label>
-                
+
                 <div id="manualInputContainer" class="input-list-container">
                     <input type="text" class="manual-code-input" data-index="0" placeholder="Code 1">
-                    
                 </div>
 
                 <button id="addCodeInputBtn" class="action-btn btn-secondary" style="margin-bottom: 10px;">
                     <i class="fas fa-plus"></i> Ajouter un code
                 </button>
-                
+
                 <label style="text-align: center; margin: 10px 0; font-style: italic; opacity: 0.8; font-size: 0.75rem;">OU IMPORTER</label>
-                
+
                 <label class="drop-zone" id="dropZone">
                     <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
                     <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
@@ -127,13 +122,42 @@
                 </div>
             </div>
 
-<div class="control-group">
-    <label>4. Option Flèche latérale</label>
-    <select id="arrowOption" style="margin-bottom: 10px;">
-        <option value="none">Aucune</option>
-        <option value="line-up">↑ Vers le Haut </option> <option value="line-down">↓ Vers le Bas </option> </select>
-</div>
+            <div class="control-group">
+                <label>4. Option Flèche latérale</label>
+                <select id="arrowOption" style="margin-bottom: 10px;">
+                    <option value="none">Aucune</option>
+                    <option value="line-up">↑ Vers le Haut</option>
+                    <option value="line-down">↓ Vers le Bas</option>
+                </select>
             </div>
+
+            <!-- ✅ NOUVEAU : Contrôle taille du texte sous le code-barres -->
+            <div class="control-group">
+                <label>5. Taille du texte sous le code (px)</label>
+                <div class="grid-settings">
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <label>Taille (px)</label>
+                            <input type="number" id="fontSize" value="13" min="6" max="60" step="1">
+                        </div>
+                        <div class="grid-col">
+                            <label>Aperçu</label>
+                            <div id="fontSizePreview" style="
+                                background: var(--bg-app);
+                                border: 1px solid var(--border-subtle);
+                                border-radius: var(--radius);
+                                padding: 8px;
+                                text-align: center;
+                                color: #fff;
+                                font-size: 13px;
+                                line-height: 2;
+                            ">ABC123</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
 
         <div class="sidebar-footer">
             <button class="action-btn btn-print" onclick="window.print()">Imprimer toutes les Planches</button>
@@ -143,10 +167,10 @@
 
     <main class="main-content">
 
-    <button id="helpButton" class="action-btn help-btn" title="Aide et informations">
-    <i class="fas fa-circle-info"></i> </button>
-        
-        
+        <button id="helpButton" class="action-btn help-btn" title="Aide et informations">
+            <i class="fas fa-circle-info"></i>
+        </button>
+
         <div class="toolbar-preview">
             <span>Zoom Aperçu</span>
             <input type="range" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.7">
@@ -168,36 +192,32 @@
 
     <script src="plaquettes.js" defer></script>
 
-
     <div id="helpModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>❓ Guide d'utilisation GenCodeBarre v2.3</h3>
-      <button class="close-btn" id="closeModalBtn">&times;</button>
-    </div>
-    <div class="modal-body">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>❓ Guide d'utilisation GenCodeBarre v2.3</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>📂 Onglet Planches</h4>
+                <p>Cet onglet vous permet d'importer une liste de codes depuis un fichier Excel (.xlsx) afin de générer une ou plusieurs planche(s) complète(s) en une seule fois.</p>
+                <ul>
+                    <li>Source de Données (Excel) : Assurez-vous que tous vos codes sont listés dans la colonne A du fichier Excel.</li>
+                    <li>Type de Code : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
+                    <li>Configuration Grille : Sélectionnez le type de planche que vous souhaitez.</li>
+                    <li>Option Flèche latérale : Vous avez la possibilité d'ajouter une flèche d'orientation sur la partie gauche du code-barres.</li>
+                    <li>Taille du texte : Ajustez indépendamment la taille du texte affiché sous le code-barres (de 6px à 60px).</li>
+                </ul>
 
-      
-      <h4>📂 Onglet Planches</h4>
-      <p>Cet onglet vous permet d'importer une liste de codes depuis un fichier Excel (.xlsx) afin de générer une ou plusieurs planche(s) complète(s) en une seule fois.</p>
-<ul>
-    <li>Source de Données (Excel) : Assurez-vous que tous vos codes sont listés dans la colonne A du fichier Excel.</li>
-    <li>Type de Code : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
-    <li>Configuration Grille : Sélectionnez le type de planche que vous souhaitez.</li>
-    <li>Option Flèche latérale : Vous avez la possibilité d'ajouter une flèche d'orientation sur la partie gauche du code-barres.</li>
-</ul>
-        
-<hr class="divider">
-    
-    <h4>📚 Documentation Complète</h4>  
-    <a href="https://mikefri.github.io/GenCodeBarre/README.html" target="_blank" class="btn-documentation">
-        Consulter le README complet ↗
-    </a>
-    </div>
-  </div>
-</div>
+                <hr class="divider">
 
-    
+                <h4>📚 Documentation Complète</h4>
+                <a href="https://mikefri.github.io/GenCodeBarre/README.html" target="_blank" class="btn-documentation">
+                    Consulter le README complet ↗
+                </a>
+            </div>
+        </div>
+    </div>
+
 </body>
-
 </html>
