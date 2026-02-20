@@ -24,16 +24,19 @@ document.addEventListener('DOMContentLoaded', () => {
         codeScale: document.getElementById('codeScale'),
         gridPresetSelect: document.getElementById('gridPresetSelect'),
         arrowOption: document.getElementById('arrowOption'),
+        // ✅ NOUVEAU : référence au champ taille de texte et son aperçu
+        fontSize: document.getElementById('fontSize'),
+        fontSizePreview: document.getElementById('fontSizePreview'),
         helpModal: document.getElementById('helpModal'),
-        helpButton: document.getElementById('helpButton'), 
+        helpButton: document.getElementById('helpButton'),
         closeModalBtn: document.getElementById('closeModalBtn')
     };
 
     // --- STOCKAGE ---
-    let manualData = []; 
-    let excelData = [];  
+    let manualData = [];
+    let excelData = [];
 
-    // --- TES PRESETS RÉINSTALLÉS ---
+    // --- PRESETS ---
     const gridPresets = [
         { name: "Planche de 24 70x36", marginTop: 3.5, marginLeft: 0, nbCols: 3, nbRows: 8, rowHeight: 36 },
         { name: "Planche de 4 210x74", marginTop: 0, marginLeft: 0, nbCols: 1, nbRows: 4, rowHeight: 74 }
@@ -94,6 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ✅ NOUVEAU : Mise à jour de l'aperçu de taille de texte en temps réel
+    function updateFontSizePreview() {
+        if (!refs.fontSizePreview || !refs.fontSize) return;
+        const size = parseInt(refs.fontSize.value) || 13;
+        refs.fontSizePreview.style.fontSize = size + 'px';
+    }
+
+    if (refs.fontSize) {
+        refs.fontSize.addEventListener('input', () => {
+            updateFontSizePreview();
+            renderBarcodes();
+        });
+    }
+
     // --- RENDU ---
     function renderBarcodes() {
         const sheetsToRemove = refs.sheetLayer.querySelectorAll('.sheet:not(#pageSheet)');
@@ -106,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const filteredManual = manualData.filter(v => v !== "");
         let dataToUse = [...excelData, ...filteredManual];
-        
+
         if (dataToUse.length === 0) dataToUse = ["APERÇU"];
 
         const isDemo = dataToUse[0] === "APERÇU";
@@ -144,6 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const arrowSVG = createArrowSVG(refs.arrowOption.value);
         if (arrowSVG) cell.appendChild(arrowSVG);
 
+        // ✅ Récupération de la taille de texte choisie par l'utilisateur
+        const fs = parseInt(refs.fontSize.value) || 13;
+
         try {
             const type = refs.codeType.value;
             if (type === 'QRCODE') {
@@ -154,11 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 cell.appendChild(svg);
-                JsBarcode(svg, String(text), { format: type, width: 2 * scale, height: 50 * scale, displayValue: true, margin: 5 });
+                // ✅ fontSize et textMargin passés à JsBarcode
+                JsBarcode(svg, String(text), {
+                    format: type,
+                    width: 2 * scale,
+                    height: 50 * scale,
+                    displayValue: true,
+                    margin: 5,
+                    fontSize: fs,
+                    textMargin: 2
+                });
                 containerElement.appendChild(cell);
             }
         } catch (e) {
-            cell.innerHTML = `<span style="color:red;font-size:0.7rem;">Erreur</span>`;
+            cell.innerHTML = `<span style="color:red;font-size:0.7rem;">Erreur: ${String(text)}</span>`;
             containerElement.appendChild(cell);
         }
     }
@@ -179,6 +208,29 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsBinaryString(file);
     });
 
+    // --- DROP ZONE (drag & drop) ---
+    if (refs.dropZone) {
+        refs.dropZone.addEventListener('click', () => refs.excelInput.click());
+        refs.dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            refs.dropZone.style.borderColor = 'var(--primary)';
+        });
+        refs.dropZone.addEventListener('dragleave', () => {
+            refs.dropZone.style.borderColor = '';
+        });
+        refs.dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            refs.dropZone.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                refs.excelInput.files = dt.files;
+                refs.excelInput.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
     // --- FONCTIONS UTILES ---
     function updateSheetCSS(sheetElement) {
         sheetElement.style.setProperty('--mt', refs.marginTop.value + 'mm');
@@ -192,87 +244,77 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fullOption === 'none' || !fullOption.startsWith('line-')) return null;
         const [style, dir] = fullOption.split('-');
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", "10mm"); svg.setAttribute("height", "20mm");
+        svg.setAttribute("width", "10mm");
+        svg.setAttribute("height", "20mm");
         svg.setAttribute("viewBox", "0 0 100 200");
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("fill", "none"); path.setAttribute("stroke", "#000"); path.setAttribute("stroke-width", "20");
-        let d = (dir === 'up') ? "M 50,180 L 50,20 M 25,50 L 50,20 L 75,50" : "M 50,20 L 50,180 M 25,150 L 50,180 L 75,150";
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "#000");
+        path.setAttribute("stroke-width", "20");
+        let d = (dir === 'up')
+            ? "M 50,180 L 50,20 M 25,50 L 50,20 L 75,50"
+            : "M 50,20 L 50,180 M 25,150 L 50,180 L 75,150";
         path.setAttribute("d", d);
         svg.appendChild(path);
         return svg;
     }
 
-    refs.clearBtn.onclick = () => {
-        excelData = [];
-        manualData = [];
-        refs.manualContainer.innerHTML = '';
-        createInputRow();
-        renderBarcodes();
-    };
+    // --- CLEAR ---
+    if (refs.clearBtn) {
+        refs.clearBtn.onclick = () => {
+            excelData = [];
+            manualData = [];
+            refs.manualContainer.innerHTML = '';
+            if (refs.importStatus) refs.importStatus.style.display = 'none';
+            createInputRow();
+            renderBarcodes();
+        };
+    }
 
-    // Écouteurs configs
+    // --- ÉCOUTEURS CONFIG ---
     [refs.marginTop, refs.marginLeft, refs.nbCols, refs.nbRows, refs.rowHeight, refs.codeScale, refs.codeType, refs.arrowOption]
-        .forEach(el => el.addEventListener('input', () => { 
-            updateSheetCSS(refs.pageSheet); 
-            renderBarcodes(); 
-        }));
+        .forEach(el => {
+            if (el) el.addEventListener('input', () => {
+                updateSheetCSS(refs.pageSheet);
+                renderBarcodes();
+            });
+        });
 
-    // Zoom
+    // --- ZOOM ---
     refs.zoomSlider.oninput = (e) => {
         const scale = parseFloat(e.target.value);
         refs.sheetLayer.style.transform = `scale(${scale})`;
         refs.zoomValue.textContent = `${Math.round(scale * 100)}%`;
     };
 
-// --- GESTION DE LA MODALE D'AIDE (CORRIGÉ) ---
-
-    // Fonction pour ouvrir la modale
+    // --- MODALE D'AIDE ---
     function openModal() {
         if (refs.helpModal) refs.helpModal.classList.add('open');
     }
 
-    // Fonction pour fermer la modale
     function closeModal() {
         if (refs.helpModal) refs.helpModal.classList.remove('open');
     }
 
-    // 1. Ouvrir la modale au clic sur le bouton '?'
-    if (refs.helpButton) {
-        refs.helpButton.addEventListener('click', openModal);
-    }
+    if (refs.helpButton) refs.helpButton.addEventListener('click', openModal);
+    if (refs.closeModalBtn) refs.closeModalBtn.addEventListener('click', closeModal);
 
-    // 2. Fermer la modale au clic sur le bouton 'X'
-    if (refs.closeModalBtn) {
-        refs.closeModalBtn.addEventListener('click', closeModal);
-    }
-
-    // 3. Fermer la modale si on clique en dehors (sur l'overlay)
     if (refs.helpModal) {
         refs.helpModal.addEventListener('click', (e) => {
-            // Ne fermer que si l'élément cliqué est l'overlay lui-même
-            if (e.target === refs.helpModal) {
-                closeModal();
-            }
+            if (e.target === refs.helpModal) closeModal();
         });
     }
 
-    // 4. Fermer la modale si on appuie sur la touche ESC
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && refs.helpModal && refs.helpModal.classList.contains('open')) {
             closeModal();
         }
     });
 
-
-
-
-    
-
-    
-
     // --- INIT ---
     populatePresets();
     updateSheetCSS(refs.pageSheet);
+    updateFontSizePreview();
     createInputRow();
     renderBarcodes();
 });
