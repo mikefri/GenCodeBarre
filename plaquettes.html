@@ -34,7 +34,7 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="app-title">GenCodeBarres<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.3</span></div>
+            <div class="app-title">GenCodeBarres<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.4</span></div>
         </div>
 
         <div class="sidebar-content">
@@ -44,8 +44,10 @@
                 <button class="tab-btn active" id="btn-tab-tools" data-target="tab-tools">Planches</button>
             </div>
 
+            <!-- ÉTAPE 1 : Saisie des codes -->
             <div class="control-group">
                 <label>1. Saisie des Codes (Manuel)</label>
+                <p class="hint-text"><i class="fas fa-grip-vertical" style="opacity:0.5"></i> Glisser les lignes pour réordonner</p>
 
                 <div id="manualInputContainer" class="input-list-container">
                     <input type="text" class="manual-code-input" data-index="0" placeholder="Code 1">
@@ -58,21 +60,28 @@
                 <label style="text-align: center; margin: 10px 0; font-style: italic; opacity: 0.8; font-size: 0.75rem;">OU IMPORTER</label>
 
                 <label class="drop-zone" id="dropZone">
-                    <div style="font-size: 1.5rem; margin-bottom: 5px;">📂 Import .xlsx</div>
-                    <div style="font-size: 0.75rem; opacity: 0.6;">Colonne A uniquement</div>
+                    <div class="drop-zone-icon">📂</div>
+                    <div class="drop-zone-title">Import .xlsx</div>
+                    <div class="drop-zone-sub">Colonne A uniquement</div>
+                    <div class="drop-zone-spinner" id="dropZoneSpinner" style="display:none">
+                        <i class="fas fa-spinner fa-spin"></i> Lecture...
+                    </div>
                     <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
                 </label>
 
                 <div id="importStatus" class="status-card" style="display:none;">
-                    <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">Import OK</div>
+                    <div style="color: #fff; font-weight: 600; font-size: 0.8rem;">✅ Import OK</div>
                     <div id="importCount" style="color: #a7f3d0; font-size: 0.75rem;"></div>
                 </div>
 
-                <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">Effacer les données</button>
+                <button id="clearDataBtn" class="action-btn btn-danger" style="display:none;">
+                    <i class="fas fa-trash-alt"></i> Effacer les données
+                </button>
             </div>
 
             <div class="divider"></div>
 
+            <!-- ÉTAPE 2 : Type de code -->
             <div class="control-group">
                 <label>2. Type de Code</label>
                 <select id="codeType">
@@ -82,6 +91,7 @@
                 </select>
             </div>
 
+            <!-- ÉTAPE 3 : Configuration planches -->
             <div class="control-group">
                 <label>3. Configuration Planches</label>
 
@@ -122,6 +132,7 @@
                 </div>
             </div>
 
+            <!-- ÉTAPE 4 : Flèche latérale -->
             <div class="control-group">
                 <label>4. Option Flèche latérale</label>
                 <select id="arrowOption" style="margin-bottom: 10px;">
@@ -131,7 +142,7 @@
                 </select>
             </div>
 
-            <!-- ✅ NOUVEAU : Contrôle taille du texte sous le code-barres -->
+            <!-- ÉTAPE 5 : Taille du texte -->
             <div class="control-group">
                 <label>5. Taille du texte sous le code (px)</label>
                 <div class="grid-settings">
@@ -157,11 +168,41 @@
                 </div>
             </div>
 
+            <!-- ÉTAPE 6 : Texte personnalisé (NOUVEAU) -->
+            <div class="control-group">
+                <label>6. Texte personnalisé sur l'étiquette <span class="badge-new">Nouveau</span></label>
+                <input type="text" id="customLabel" placeholder="Ex : Réf. produit, Lot n°..." maxlength="60"
+                    style="margin-bottom: 8px;">
+                <select id="customLabelPosition">
+                    <option value="top">En haut de l'étiquette</option>
+                    <option value="bottom">En bas de l'étiquette</option>
+                </select>
+                <p class="hint-text">Ce texte sera identique sur toutes les étiquettes</p>
+            </div>
+
         </div>
 
         <div class="sidebar-footer">
-            <button class="action-btn btn-print" onclick="window.print()">Imprimer toutes les Planches</button>
-            <button class="action-btn btn-download" id="downloadBtn">Télécharger le PDF</button>
+            <!-- Compteur de planches (NOUVEAU) -->
+            <div class="sheet-counter">
+                <span id="pageCounter" class="page-counter-text">—</span>
+                <span id="invalidBadge" class="invalid-badge" style="display:none;"></span>
+            </div>
+
+            <!-- Barre de progression PDF (NOUVEAU) -->
+            <div id="pdfProgress" class="pdf-progress-container" style="display:none;">
+                <div class="pdf-progress-track">
+                    <div id="pdfProgressBar" class="pdf-progress-bar" style="width:0%"></div>
+                </div>
+                <span id="pdfProgressText" class="pdf-progress-text">Préparation...</span>
+            </div>
+
+            <button class="action-btn btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimer toutes les Planches
+            </button>
+            <button class="action-btn btn-download" id="downloadBtn">
+                <i class="fas fa-file-pdf"></i> Télécharger le PDF
+            </button>
         </div>
     </aside>
 
@@ -192,21 +233,30 @@
 
     <script src="plaquettes.js" defer></script>
 
+    <!-- Toast copie (NOUVEAU) -->
+    <div id="copyToast" class="copy-toast"></div>
+
+    <!-- Modale d'aide -->
     <div id="helpModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>❓ Guide d'utilisation GenCodeBarre v2.3</h3>
+                <h3>❓ Guide d'utilisation GenCodeBarre v2.4</h3>
                 <button class="close-btn" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
                 <h4>📂 Onglet Planches</h4>
                 <p>Cet onglet vous permet d'importer une liste de codes depuis un fichier Excel (.xlsx) afin de générer une ou plusieurs planche(s) complète(s) en une seule fois.</p>
                 <ul>
-                    <li>Source de Données (Excel) : Assurez-vous que tous vos codes sont listés dans la colonne A du fichier Excel.</li>
-                    <li>Type de Code : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
-                    <li>Configuration Grille : Sélectionnez le type de planche que vous souhaitez.</li>
-                    <li>Option Flèche latérale : Vous avez la possibilité d'ajouter une flèche d'orientation sur la partie gauche du code-barres.</li>
-                    <li>Taille du texte : Ajustez indépendamment la taille du texte affiché sous le code-barres (de 6px à 60px).</li>
+                    <li><strong>Source de Données</strong> : Assurez-vous que tous vos codes sont listés dans la colonne A du fichier Excel.</li>
+                    <li><strong>Type de Code</strong> : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
+                    <li><strong>Configuration Grille</strong> : Sélectionnez le type de planche que vous souhaitez.</li>
+                    <li><strong>Option Flèche latérale</strong> : Vous avez la possibilité d'ajouter une flèche d'orientation sur la partie gauche du code-barres.</li>
+                    <li><strong>Taille du texte</strong> : Ajustez indépendamment la taille du texte affiché sous le code-barres.</li>
+                    <li><strong>Texte personnalisé</strong> : Ajoutez un libellé fixe sur toutes les étiquettes (ex : nom de lot, référence).</li>
+                    <li><strong>Codes invalides</strong> : Les codes incompatibles avec le type choisi sont affichés en rouge avec un avertissement.</li>
+                    <li><strong>Copier un code</strong> : Cliquez sur une étiquette dans l'aperçu pour copier son code dans le presse-papier.</li>
+                    <li><strong>Réordonner</strong> : Glissez-déposez les lignes de saisie manuelle pour les réordonner.</li>
+                    <li><strong>PDF</strong> : Le bouton "Télécharger le PDF" génère un PDF multi-pages de toutes vos planches.</li>
                 </ul>
 
                 <hr class="divider">
