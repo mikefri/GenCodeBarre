@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Générateur de Code-Barres & QR Code Gratuit | GenCodeBarre</title>
   <meta name="description" content="Outil en ligne gratuit pour générer, imprimer et exporter des codes-barres Code 128, EAN-13 et QR Codes. Supporte l'import Excel.">
   <meta name="keywords" content="générateur code barre, QR code, gratuit, impression étiquettes, excel en code barre">
 
-  <!-- Favicon (ajouté et optimisé) -->
+  <!-- Favicon -->
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="icon" href="icon-192x192.png" sizes="192x192" type="image/png">
   <link rel="apple-touch-icon" href="icon-512x512.png" sizes="512x512">
@@ -30,97 +30,102 @@
   <!-- Theme color (PWA / navigateur mobile) -->
   <meta name="theme-color" content="#0f172a">
 
-
-<link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Polices Modernes -->
+  <!-- Polices Modernes avec préchargement -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Librairies -->
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-   <link rel="stylesheet" href="style.css">
+  <!-- Librairies avec intégration différée -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
   
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="style.css">
   <style id="print-style"></style>
   
+  <!-- Chargement différé des scripts volumineux -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 </head>
 <body>
 
-  <aside class="sidebar">
+  <aside class="sidebar" aria-label="Panneau de contrôle">
     <div class="sidebar-header">
-      <div class="app-title">GenCodeBarre<span style="font-size: 0.7em; opacity: 0.6; font-weight: normal; margin-left: 5px;">v2.3</span></div>
+      <div class="app-title">GenCodeBarre<span class="version">v2.3</span></div>
     </div>
     
     <div class="sidebar-content">
-      <div class="tabs-nav">
-        <button class="tab-btn active" id="btn-tab-gen" data-target="tab-generator">Création</button>
-        <a href="https://mikefri.github.io/GenCodeBarre/plaquettes.html" class="tab-btn" id="btn-tab-tools">Planches</a>
-      </div>
+      <nav class="tabs-nav" aria-label="Navigation principale">
+        <button class="tab-btn active" id="btn-tab-gen" data-target="tab-generator" aria-selected="true" aria-controls="tab-generator">
+          Création
+        </button>
+        <a href="https://mikefri.github.io/GenCodeBarre/plaquettes.html" class="tab-btn" id="btn-tab-tools" aria-selected="false">
+          Planches
+        </a>
+      </nav>
 
       <!-- --- ONGLET 1 : GÉNÉRATEUR --- -->
-      <div id="tab-generator" class="tab-content active">
+      <div id="tab-generator" class="tab-content active" role="tabpanel" aria-labelledby="btn-tab-gen">
         
         <div class="control-group">
-          <label>Titre de page</label>
-          <input type="text" id="customTitle" placeholder="Ex: Inventaire 2025">
+          <label for="customTitle">Titre de page</label>
+          <input type="text" id="customTitle" placeholder="Ex: Inventaire 2025" aria-describedby="titleHelp">
+          <small id="titleHelp" class="help-text">Ce titre apparaîtra en haut de la page générée</small>
         </div>
+        
         <div class="control-group">
           <div class="range-header">
-            <label>Taille Titre</label>
+            <label for="titleSizeSlider">Taille Titre</label>
             <span id="titleSizeVal" class="range-value">3</span>
           </div>
-          <input type="range" id="titleSizeSlider" min="1" max="10" step="0.5" value="3">
+          <input type="range" id="titleSizeSlider" min="1" max="10" step="0.5" value="3" aria-valuemin="1" aria-valuemax="10" aria-valuenow="3">
         </div>
         
-        <div class="divider"></div>
+        <div class="divider" role="separator"></div>
 
         <div class="control-group">
-          <label>Données (Code)</label>
-          <input type="text" id="texte" value="12345678" placeholder="Saisir le code...">
+          <label for="texte">Données (Code)</label>
+          <input type="text" id="texte" value="12345678" placeholder="Saisir le code..." aria-required="true">
         </div>
 
         <div class="control-group">
-          <label>Type de Code</label>
-          <select id="type">
+          <label for="type">Type de Code</label>
+          <select id="type" aria-describedby="typeHelp">
             <option value="CODE128" selected>Code 128 (Standard)</option>
             <option value="EAN13">EAN-13 (Produit)</option>
             <option value="QRCODE">QR Code (Lien)</option>
           </select>
+          <small id="typeHelp" class="help-text">Code 128 pour usage général, EAN-13 pour produits, QR Code pour liens</small>
         </div>
 
         <label class="checkbox-wrapper">
-          <input type="checkbox" id="showText" checked>
+          <input type="checkbox" id="showText" checked aria-checked="true">
           <span>Afficher le texte sous le code</span>
         </label>
 
-        <div class="divider"></div>
+        <div class="divider" role="separator"></div>
 
         <div class="control-group">
           <div class="range-header">
             <label>Configuration Papier</label>
           </div>
-          <div class="radio-group">
+          <div class="radio-group" role="group" aria-label="Format de papier">
             <label class="radio-option">
-              <input type="radio" name="format" value="a4" checked>
+              <input type="radio" name="format" value="a4" checked aria-checked="true">
               <span>A4</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="format" value="a3">
+              <input type="radio" name="format" value="a3" aria-checked="false">
               <span>A3</span>
             </label>
-            <label class="radio-option" style="border-left: 1px solid var(--border-subtle);">
-              <input type="radio" name="orientation" value="portrait" checked>
+            <label class="radio-option separator">
+              <input type="radio" name="orientation" value="portrait" checked aria-checked="true">
               <span>Portrait</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="orientation" value="landscape">
+              <input type="radio" name="orientation" value="landscape" aria-checked="false">
               <span>Paysage</span>
             </label>
           </div>
@@ -128,121 +133,129 @@
 
         <div class="control-group">
           <div class="range-header">
-            <label>Échelle du Code</label>
+            <label for="sizeSlider">Échelle du Code</label>
             <span id="codeSizeVal" class="range-value">1</span>
           </div>
-          <!-- MODIFICATION ICI : Max passé de 5 à 15 pour le format A3 -->
-          <input type="range" id="sizeSlider" min="0.5" max="15" step="0.1" value="1">
+          <input type="range" id="sizeSlider" min="0.5" max="15" step="0.1" value="1" aria-valuemin="0.5" aria-valuemax="15" aria-valuenow="1">
         </div>
 
         <div class="actions">
-          <button class="action-btn btn-print" id="printBtn">
-            Imprimer la page
+          <button class="action-btn btn-print" id="printBtn" aria-label="Imprimer la page actuelle">
+            <i class="fas fa-print" aria-hidden="true"></i> Imprimer la page
           </button>
-          <button class="action-btn btn-download" id="downloadBtn">
-            Telecharger le PDF
+          <button class="action-btn btn-download" id="downloadBtn" aria-label="Télécharger le PDF">
+            <i class="fas fa-download" aria-hidden="true"></i> Télécharger le PDF
           </button>
         </div>
       </div>
 
       <!-- --- ONGLET 2 : OUTILS EXCEL --- -->
-      <div id="tab-tools" class="tab-content">
+      <div id="tab-tools" class="tab-content" role="tabpanel" aria-labelledby="btn-tab-tools" hidden>
         <div class="control-group">
-          <label>Import Excel de masse</label>
-          <label class="drop-zone" id="dropZone">
-            <div style="font-size: 1.5rem; margin-bottom: 10px;">📂</div>
-            <div style="font-weight: 500;">Sélectionner un fichier .xlsx</div>
-            <div style="font-size: 0.8rem; opacity: 0.6; margin-top: 5px;">Colonne A uniquement</div>
+          <label for="excelInput">Import Excel de masse</label>
+          <label class="drop-zone" id="dropZone" for="excelInput" tabindex="0" role="button" aria-label="Glisser-déposer ou cliquer pour importer un fichier Excel">
+            <div class="drop-icon" aria-hidden="true">📂</div>
+            <div class="drop-text">Sélectionner un fichier .xlsx</div>
+            <div class="drop-info">Colonne A uniquement</div>
             <input type="file" id="excelInput" class="hidden-input" accept=".xlsx, .xls" style="display:none">
           </label>
         </div>
 
         <!-- Zone de statut -->
-        <div id="importStatus" class="status-card">
-          <div style="color: #fff; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem;">
-              Import terminé
+        <div id="importStatus" class="status-card" role="status" aria-live="polite" hidden>
+          <div class="status-title">
+            Import terminé
           </div>
-          <div id="importCount" style="color: #a7f3d0; font-size: 0.85rem;"></div>
+          <div id="importCount"></div>
         </div>
 
         <div class="actions" style="margin-top: auto;">
-           <button class="action-btn" id="regenerateBatchBtn" style="display:none;">
+           <button class="action-btn" id="regenerateBatchBtn" hidden aria-label="Regénérer les codes à partir des données importées">
              Voir la planche générée
            </button>
-           <button class="action-btn" id="clearDataBtn" style="display:none;">
+           <button class="action-btn btn-danger" id="clearDataBtn" hidden aria-label="Effacer toutes les données importées">
              Effacer les données
            </button>
         </div>
       </div>
     </div>
     
-<div class="sidebar-footer">
-    <div class="footer-info">
+    <div class="sidebar-footer">
+      <div class="footer-info">
         <span class="footer-author">Créé par Micfri</span>
-        <span class="footer-separator">•</span>
-        <a href="https://github.com/mikefri/GenCodeBarre/issues/new" target="_blank" class="nav-button">
-    <i class="fa-solid fa-comment-dots"></i> Signaler un problème
-</a>
+        <span class="footer-separator" aria-hidden="true">•</span>
+        <a href="https://github.com/mikefri/GenCodeBarre/issues/new" target="_blank" class="nav-button" rel="noopener" aria-label="Signaler un problème (ouvre dans un nouvel onglet)">
+          <i class="fa-solid fa-comment-dots" aria-hidden="true"></i> Signaler un problème
+        </a>
+      </div>
     </div>
-</div>
-
-    
   </aside>
 
-  <main class="main-content">
-
-
-    <button id="helpButton" class="action-btn help-btn" title="Aide et informations">
-    <i class="fas fa-circle-info"></i> </button>
+  <main class="main-content" aria-label="Aperçu de la génération">
+    <button id="helpButton" class="action-btn help-btn" title="Aide et informations" aria-label="Ouvrir l'aide">
+      <i class="fas fa-circle-info" aria-hidden="true"></i>
+    </button>
     
     <!-- Barre d'outils flottante pour le Zoom -->
     <div class="toolbar-preview">
       <span>Zoom Aperçu</span>
-      <input type="range" id="previewZoomSlider" min="0.3" max="1.5" step="0.05" value="0.65" style="width: 100px;">
-      <span id="previewZoomVal" style="width: 40px; text-align:right;">65%</span>
+      <input type="range" id="previewZoomSlider" min="0.3" max="1.5" step="0.05" value="0.65" aria-label="Niveau de zoom de l'aperçu">
+      <span id="previewZoomVal" class="zoom-value">65%</span>
     </div>
     
     <div class="preview-scroll-wrapper">
       <div class="sheet-transform-layer" id="sheetLayer">
-        <div id="pageSheet" class="sheet a4 portrait">
-          <div id="title-display"></div>
+        <div id="pageSheet" class="sheet a4 portrait" aria-label="Feuille de codes-barres">
+          <div id="title-display" aria-live="polite"></div>
           <div id="barcode-wrapper">
-            <div id="canvas-target"></div>
+            <div id="canvas-target" role="region" aria-label="Codes-barres générés"></div>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  
-   <script src="script.js" defer></script> 
+  <div id="helpModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">❓ Guide d'utilisation GenCodeBarre v2.3</h3>
+        <button class="close-btn" id="closeModalBtn" aria-label="Fermer la fenêtre d'aide">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4>🛠️ Onglet Éditeur (Générateur)</h4>
+        <ul>
+          <li>Titre de page : Ajoute un titre qui ce positionnera en haut du code barre (ex: "Inventaire Magasin A").</li>
+          <li>Données (Code) : C'est ici que vous saisissez le texte ou le numéro qui sera encodé dans le code barre.</li>
+          <li>Type de Code : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
+          <li>Échelle du Code : Ajustez la taille physique du code-barres sur la page imprimée.</li>
+        </ul>
 
-
-  <div id="helpModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>❓ Guide d'utilisation GenCodeBarre v2.3</h3>
-      <button class="close-btn" id="closeModalBtn">&times;</button>
+        <hr class="divider">
+        
+        <h4>📚 Documentation Complète</h4>  
+        <a href="https://mikefri.github.io/GenCodeBarre/README.html" target="_blank" class="btn-documentation" rel="noopener">
+          Consulter le README complet ↗
+        </a>
+      </div>
     </div>
-    <div class="modal-body">
-    
-    <h4>🛠️ Onglet Éditeur (Générateur)</h4>
-    <ul>
-        <li>Titre de page : Ajoute un titre qui ce positionnera en haut du code barre (ex: "Inventaire Magasin A").</li>
-        <li>Données (Code) : C'est ici que vous saisissez le texte ou le numéro qui sera encodé dans le code barre.</li>
-        <li>Type de Code : Choisissez le type de code (Code 128 pour la plupart des usages, EAN-13 pour les produits, QR Code pour les liens/infos).</li>
-        <li>Échelle du Code : Ajustez la taille physique du code-barres sur la page imprimée.</li>
-    </ul>
-
-    <hr class="divider">
-    
-    <h4>📚 Documentation Complète</h4>  
-    <a href="https://mikefri.github.io/GenCodeBarre/README.html" target="_blank" class="btn-documentation">
-        Consulter le README complet ↗
-    </a>
-</div>
   </div>
-</div>
   
+  <!-- Script principal avec gestion d'erreurs -->
+  <script src="script.js" defer></script>
+  
+  <!-- Service Worker avec gestion d'erreurs -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(registration => {
+            console.log('Service Worker enregistré avec succès :', registration.scope);
+          })
+          .catch(error => {
+            console.warn('Échec de l\'enregistrement du Service Worker :', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
